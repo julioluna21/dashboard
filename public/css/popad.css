@@ -1,0 +1,43 @@
+html,body{
+       width: 100%;
+	   height: 100%;
+}
+
+ body {
+     background: #535455;
+}
+
+#circle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+	width: 450px;
+    height: 450px;	
+}
+
+.loader {
+    width: calc(100% - 0px);
+	height: calc(100% - 0px);
+	border: 40px solid #5C5D5D;
+	border-top: 40px solid #871F1B;
+	border-radius: 60%;
+	animation: rotate 5s linear infinite;
+}
+
+
+
+img {
+    width: 80px;
+	position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+}
+
+
+@keyframes rotate {
+100% {transform: rotate(360deg);}
+} 
+
+
