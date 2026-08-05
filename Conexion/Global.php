@@ -1,10 +1,10 @@
 <?php 
-define('DB_HOST','regencysa.net'); 
-define('DB_NAME','bd_powerbi'); 
-define('DB_USERNAME','bd_powerbi'); 
-define('DB_PASSWORD','powerbi2023'); 
+define('DB_HOST','localhost'); 
+define('DB_NAME','bdb'); 
+define('DB_USERNAME','root'); 
+define('DB_PASSWORD',''); 
 define('DB_ENCODE','utf8');
-define('PRO_NOMBRE','bd_powerbi');
+define('PRO_NOMBRE','bdb');
 
  /*
 define('DB_HOST','reservautos.db.9420054.a9a.hostedresource.net'); //https://p3nlmysqladm002.secureserver.net/grid55/195

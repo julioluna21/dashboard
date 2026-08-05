@@ -208,7 +208,10 @@ include('header.php');
                     <input type="checkbox" class="" name="permiso[]" id="M39" value="M39"  /></SPAN><br>	
                      <label>REPORTE ASISTENCIAL:</label>
                     <SPAN title="REPORTE ASISTENCIAL" style="float:right">
-                    <input type="checkbox" class="" name="permiso[]" id="M40" value="M40"  /></SPAN><br>	    
+                    <input type="checkbox" class="" name="permiso[]" id="M40" value="M40"  /></SPAN><br>
+                     <label>MOVIMIENTOS CONTABLES:</label>
+                    <SPAN title="MOVIMIENTOS CONTABLES" style="float:right">
+                    <input type="checkbox" class="" name="permiso[]" id="M41" value="M41"  /></SPAN><br>	    
                         	
                             </div> 	  
 								
