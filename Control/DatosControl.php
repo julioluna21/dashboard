@@ -83,7 +83,7 @@ switch ($_GET["op"]) {
         $rspta = $ejecucion->editar($table_name, $data_values, $where_condition);
         echo $rspta? "Registro actulizado": "Error no se actulizo el registro";		
 		}else{
-			echo "error ya existe un registro para esa fecha, caetgoria y centro operativo seleccionado";
+			echo "error ya existe un registro para esa fecha, categoria y centro operativo seleccionado";
 		}		 
 		}else{
 		$data_values = array ('ID_EJECUCION_CONTRATO'=>$contrato,"CATEGORIA"=>$categoria,'FEC_DET_EJE_PEAJE'=>$fecha,'TOTAL_TRAIFICO'=>$totalTrafico,'TOTAL_RECUDO'=>$TotalRecuado,'TOTAL_TRAFICO_EXCLUSIVO'=>$Traficoex,'TOTAL_RECUDO_EXCLUSIVO'=>$recudoex,'TRAFICO_EXT_LEY'=>$traficoley,'TRAFICO_EXT_CONSECION'=>$traficoconsecion,'ESTADO_JECUCION'=>1);
@@ -146,7 +146,7 @@ switch ($_GET["op"]) {
         $dato9=str_replace(".",'',$dato9);     
         $dato10=str_replace(".",'',$dato10);   
             
-        $dato1=str_replace("$",'',$dato1);//quita las comillas en eeste caso las comillas " si son comillas simple modificar ' 
+        $dato1=str_replace("$",'',$dato1);//quita las comillas en este caso las comillas " si son comillas simple modificar ' 
         $dato2=str_replace("$",'',$dato2);   
         $dato3=str_replace("$",'',$dato3);   
         $dato4=str_replace("$",'',$dato4);
