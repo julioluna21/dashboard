@@ -622,6 +622,188 @@ public function detallecontrato($id)
             }
             return ejecutarConsulta($sql);
     }
+
+
+     //Implementamos un método para insertar registros siesa
+            public function insertarCuentas($f252_id,$f252_descripcion,$f252_id_plan,$f252_nivel)
+            {
+                    $sql="INSERT IGNORE INTO cuentas_siesa(f252_id ,`f252_descripcion`,`f252_id_plan`, f252_nivel)
+                    VALUES ('$f252_id','$f252_descripcion','$f252_id_plan','$f252_nivel')";
+                    return ejecutarConsulta($sql);//envia la sentencia a la funcion ejecutarConsulta que está en conexion.php
+            }
+
+              public function centro_costo_siesa($f284_id,$f284_descripcion,$f284_id_grupo_ccosto)
+            {
+                    $sql="INSERT IGNORE INTO centro_costo_siesa(f284_id, f284_descripcion, f284_id_grupo_ccosto)
+                    VALUES ('$f284_id', '$f284_descripcion', '$f284_id_grupo_ccosto')";
+                    return ejecutarConsulta($sql);//envia la sentencia a la funcion ejecutarConsulta que está en conexion.php
+            }
+
+              public function centro_operativo_siesa($f285_id,$f285_descripcion,$f285_id_regional)
+            {
+                    $sql="INSERT IGNORE INTO centro_operativo_siesa(f285_id, f285_descripcion , f285_id_regional)
+                    VALUES ('$f285_id', '$f285_descripcion', '$f285_id_regional')";
+                    return ejecutarConsulta($sql);//envia la sentencia a la funcion ejecutarConsulta que está en conexion.php
+            }
+   
+              public function unidad_negocio_siesa($f281_id,$f281_descripcion)
+            {
+                    $sql="INSERT IGNORE INTO unidad_negocio_siesa(f281_id, f281_descripcion)
+                    VALUES ('$f281_id', '$f281_descripcion')";
+                    return ejecutarConsulta($sql);//envia la sentencia a la funcion ejecutarConsulta que está en conexion.php
+            }
+
+            public function buscarCuentasPorIds($ids)
+            {
+                    $escapados = array_map('limpiarCadena', $ids);
+                    $lista = "'" . implode("','", $escapados) . "'";
+                    $sql = "SELECT TRIM(f252_id) AS f252_id, TRIM(f252_descripcion) AS f252_descripcion FROM cuentas_siesa WHERE TRIM(f252_id) IN ($lista)";
+                    $result = ejecutarConsulta($sql);
+                    $mapa = [];
+                    if ($result) {
+                            while ($row = $result->fetch_assoc()) {
+                                    $mapa[$row['f252_id']] = $row['f252_descripcion'];
+                            }
+                    }
+                    return $mapa;
+            }
+
+            public function buscarcentrosCostoPorIds($ids)
+            {
+                    $escapados = array_map('limpiarCadena', $ids);
+                    $lista = "'" . implode("','", $escapados) . "'";
+                    $sql = "SELECT TRIM(f284_id) AS f284_id, TRIM(f284_descripcion) AS f284_descripcion, TRIM(f284_id_grupo_ccosto) AS f284_id_grupo_ccosto FROM centro_costo_siesa WHERE f284_id IN ($lista)";
+                    $result = ejecutarConsulta($sql);
+                    $mapa = [];
+                    if ($result) {
+                            while ($row = $result->fetch_assoc()) {
+                                    $mapa[$row['f284_id']] = ['f284_descripcion' => $row['f284_descripcion'], 'f284_id_grupo_ccosto' => $row['f284_id_grupo_ccosto']];
+                            }
+                    }
+                    return $mapa;
+            }
+
+
+            public function buscarcentrosoperativosPorIds($ids)
+            {
+                    $escapados = array_map('limpiarCadena', $ids);
+                    $lista = "'" . implode("','", $escapados) . "'";
+                    $sql = "SELECT TRIM(f285_id) AS f285_id, TRIM(f285_descripcion) AS f285_descripcion, TRIM(f285_id_regional) AS f285_id_regional FROM centro_operativo_siesa WHERE f285_id IN ($lista)";
+                    $result = ejecutarConsulta($sql);
+                    $mapa = [];
+                    if ($result) {
+                            while ($row = $result->fetch_assoc()) {
+                                    $mapa[$row['f285_id']] = ['f285_descripcion' => $row['f285_descripcion'], 'f285_id_regional' => $row['f285_id_regional']];
+                            }
+                    }
+                    return $mapa;
+            }
+
+            public function buscarunidadesPorIds($ids)
+            {
+                    $escapados = array_map('limpiarCadena', $ids);
+                    $lista = "'" . implode("','", $escapados) . "'";
+                    $sql = "SELECT TRIM(f281_id) AS f281_id, TRIM(f281_descripcion) AS f281_descripcion FROM unidad_negocio_siesa WHERE f281_id IN ($lista)";
+                    $result = ejecutarConsulta($sql);
+                    $mapa = [];
+                    if ($result) {
+                            while ($row = $result->fetch_assoc()) {
+                             $mapa[$row['f281_id']] = $row['f281_descripcion'];
+                            }
+                    }
+                    return $mapa;
+            }
+
+
+            public function buscarregionalPorIds($ids)
+            {
+                    $escapados = array_map('limpiarCadena', $ids);
+                    $lista = "'" . implode("','", $escapados) . "'";
+                    $sql = "SELECT TRIM(codigo_regional) as codigo_regional, TRIM(nombre_regional) AS nombre_regional FROM regional_siessa  WHERE codigo_regional IN ($lista)";
+                    $result = ejecutarConsulta($sql);
+                    $mapa = [];
+                    if ($result) {
+                            while ($row = $result->fetch_assoc()) {
+                             $mapa[$row['codigo_regional']] = $row['nombre_regional'];
+                            }
+                    }
+                    return $mapa;
+            }
+
+             //Implementamos un método para insertar registros
+            public function insertarMovimientos($anio,$periodo,$empresa,$nombre_empresa,$tipo_documento,$docto,$periodo_docto,$fecha_actualizacion_docto,$fecha_aprobacion_docto,$fecha_anulacion_docto,$usuario_creacion_docto,$usuario_aprobacion_docto,$usuario_anulacion_docto,$notas_docto,$Fecha_docto,$cuenta,$nombre_auxiliar,$cuenta_n1,$nombre_cuenta_n1,$cuenta_n2,$nombre_cuenta_n2,$cuenta_n3,$nombre_cuenta_n3,$cuenta_n4,$nombre_cuenta_n4,$co_movto,$co,$regional_co_movto,$regional,$unidad_de_negocio,$nombre_unidad_de_negocio,$tercero,$nombre_tercero, $grupo_ccosto, $centro_de_costo, $nombre_centro_de_costo, $debitos, $creditos, $Deb_Libro_2, $cred_Libro_2, $Movto_libro2,$descregional)
+            {
+                    $sql="INSERT INTO movimientos_contables(
+                    anio ,
+                    `periodo`,
+                    `empresa`, 
+                    nombre_empresa,
+                    tipo_documento,
+                    docto,
+                    periodo_docto,
+                    fecha_actualizacion_docto,
+                    fecha_aprobacion_docto,
+                    fecha_anulacion_docto,
+                    usuario_creacion_docto,
+                    usuario_aprobacion_docto,
+                    usuario_anulacion_docto,
+                    notas_docto,
+                    Fecha_docto,
+                    cuenta,
+                    nombre_auxiliar,
+                    cuenta_n1,
+                    nombre_cuenta_n1,
+                    cuenta_n2,
+                    nombre_cuenta_n2,
+                    cuenta_n3,
+                    nombre_cuenta_n3,
+                    cuenta_n4,
+                    nombre_cuenta_n4,
+                    co_movto,
+                    co,
+                    regional_co_movto,
+                    regional,
+                    unidad_de_negocio,
+                    nombre_unidad_de_negocio,
+                    tercero,
+                    nombre_tercero,
+                    grupo_ccosto,
+                    centro_de_costo,
+                    nombre_centro_de_costo,
+                    debitos,
+                    creditos,
+                    Deb_Libro_2,
+                    cred_Libro_2,
+                    Movto_libro2,
+                    desc_regional)
+                    VALUES ('$anio','$periodo','$empresa','$nombre_empresa','$tipo_documento','$docto','$periodo_docto','$fecha_actualizacion_docto','$fecha_aprobacion_docto','$fecha_anulacion_docto','$usuario_creacion_docto','$usuario_aprobacion_docto','$usuario_anulacion_docto','$notas_docto','$Fecha_docto','$cuenta','$nombre_auxiliar','$cuenta_n1','$nombre_cuenta_n1','$cuenta_n2','$nombre_cuenta_n2','$cuenta_n3','$nombre_cuenta_n3','$cuenta_n4','$nombre_cuenta_n4','$co_movto','$co','$regional_co_movto','$regional','$unidad_de_negocio','$nombre_unidad_de_negocio','$tercero','$nombre_tercero', '$grupo_ccosto', '$centro_de_costo', '$nombre_centro_de_costo', '$debitos', '$creditos', '$Deb_Libro_2', '$cred_Libro_2', '$Movto_libro2', '$descregional')";
+                    return ejecutarConsulta($sql);//envia la sentencia a la funcion ejecutarConsulta que está en conexion.php
+            }
+
+
+             public function ListarMovimientos()
+            {
+                    $sql="SELECT * FROM movimientos_contables order by Fecha_docto desc limit 600";
+                    return ejecutarConsulta($sql);//envia la sentencia a la funcion ejecutarConsulta que está en conexion.php
+            }
+
+            // Borra los movimientos ya registrados de una empresa en un rango de fechas
+            // (formato 'YYYY-MM-DD'), para volver a registrarlos sin duplicar.
+            public function borrarMovimientosPorRango($idEmpresa, $fechaDesde, $fechaHasta)
+            {
+                    $idEmpresa  = limpiarCadena($idEmpresa);
+                    $fechaDesde = limpiarCadena($fechaDesde);
+                    $fechaHasta = limpiarCadena($fechaHasta);
+                    $sql = "DELETE FROM movimientos_contables WHERE empresa = '$idEmpresa' AND Fecha_docto BETWEEN '$fechaDesde' AND '$fechaHasta'";
+                    return ejecutarConsulta($sql);//envia la sentencia a la funcion ejecutarConsulta que está en conexion.php
+            }
+
+
+            public function movimiento_ultimafecha()
+            {
+                    $sql = "SELECT movimientos_contables.Fecha_docto FROM movimientos_contables ORDER BY Fecha_docto DESC LIMIT 1";
+                    return ejecutarConsultaSimpleFila($sql);//envia la sentencia a la funcion ejecutarConsulta que está en conexion.php
+            }
     
     	
 	

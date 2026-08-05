@@ -1,0 +1,317 @@
+{
+    "1": {
+        "nombre_empresa": "REGENCY SERVICES DE COLOMBIA S.A.S",
+        "meses": {
+            "enero": {
+                "fecha_desde": "2026\/01\/01",
+                "fecha_hasta": "2026\/01\/31",
+                "total_registros": 16268
+            },
+            "febrero": {
+                "fecha_desde": "2026\/02\/01",
+                "fecha_hasta": "2026\/02\/28",
+                "total_registros": 17600
+            },
+            "marzo": {
+                "fecha_desde": "2026\/03\/01",
+                "fecha_hasta": "2026\/03\/31",
+                "total_registros": 17402
+            },
+            "abril": {
+                "fecha_desde": "2026\/04\/01",
+                "fecha_hasta": "2026\/04\/30",
+                "total_registros": 39440
+            },
+            "mayo": {
+                "fecha_desde": "2026\/05\/01",
+                "fecha_hasta": "2026\/05\/31",
+                "total_registros": 22224
+            },
+            "junio": {
+                "fecha_desde": "2026\/06\/01",
+                "fecha_hasta": "2026\/06\/30",
+                "total_registros": 23473
+            }
+        }
+    },
+    "2": {
+        "nombre_empresa": "REGENCY HEALTH SERVICES S.A.S",
+        "meses": {
+            "enero": {
+                "fecha_desde": "2026\/01\/01",
+                "fecha_hasta": "2026\/01\/31",
+                "total_registros": 4967
+            },
+            "febrero": {
+                "fecha_desde": "2026\/02\/01",
+                "fecha_hasta": "2026\/02\/28",
+                "total_registros": 4149
+            },
+            "marzo": {
+                "fecha_desde": "2026\/03\/01",
+                "fecha_hasta": "2026\/03\/31",
+                "total_registros": 4392
+            },
+            "abril": {
+                "fecha_desde": "2026\/04\/01",
+                "fecha_hasta": "2026\/04\/30",
+                "total_registros": 13153
+            },
+            "mayo": {
+                "fecha_desde": "2026\/05\/01",
+                "fecha_hasta": "2026\/05\/31",
+                "total_registros": 7592
+            },
+            "junio": {
+                "fecha_desde": "2026\/06\/01",
+                "fecha_hasta": "2026\/06\/30",
+                "total_registros": 7837
+            }
+        }
+    },
+    "3": {
+        "nombre_empresa": "PROTECCION DE INFRAESTRUCTURA COLOMBIA - PROTINCO LTDA",
+        "meses": {
+            "enero": {
+                "fecha_desde": "2026\/01\/01",
+                "fecha_hasta": "2026\/01\/31",
+                "total_registros": 28408
+            },
+            "febrero": {
+                "fecha_desde": "2026\/02\/01",
+                "fecha_hasta": "2026\/02\/28",
+                "total_registros": 24693
+            },
+            "marzo": {
+                "fecha_desde": "2026\/03\/01",
+                "fecha_hasta": "2026\/03\/31",
+                "total_registros": 24702
+            },
+            "abril": {
+                "fecha_desde": "2026\/04\/01",
+                "fecha_hasta": "2026\/04\/30",
+                "total_registros": 97318
+            },
+            "mayo": {
+                "fecha_desde": "2026\/05\/01",
+                "fecha_hasta": "2026\/05\/31",
+                "total_registros": 46258
+            },
+            "junio": {
+                "fecha_desde": "2026\/06\/01",
+                "fecha_hasta": "2026\/06\/30",
+                "total_registros": 49773
+            }
+        }
+    },
+    "4": {
+        "nombre_empresa": "CONSORCIO RQS",
+        "meses": {
+            "enero": {
+                "fecha_desde": "2026\/01\/01",
+                "fecha_hasta": "2026\/01\/31",
+                "total_registros": 194
+            },
+            "febrero": {
+                "fecha_desde": "2026\/02\/01",
+                "fecha_hasta": "2026\/02\/28",
+                "total_registros": 185
+            },
+            "marzo": {
+                "fecha_desde": "2026\/03\/01",
+                "fecha_hasta": "2026\/03\/31",
+                "total_registros": 144
+            },
+            "abril": {
+                "fecha_desde": "2026\/04\/01",
+                "fecha_hasta": "2026\/04\/30",
+                "total_registros": 181
+            },
+            "mayo": {
+                "fecha_desde": "2026\/05\/01",
+                "fecha_hasta": "2026\/05\/31",
+                "total_registros": 146
+            },
+            "junio": {
+                "fecha_desde": "2026\/06\/01",
+                "fecha_hasta": "2026\/06\/30",
+                "total_registros": 193
+            }
+        }
+    },
+    "5": {
+        "nombre_empresa": "REGENCY TECH S.A.S",
+        "meses": {
+            "enero": {
+                "fecha_desde": "2026\/01\/01",
+                "fecha_hasta": "2026\/01\/31",
+                "total_registros": 1162
+            },
+            "febrero": {
+                "fecha_desde": "2026\/02\/01",
+                "fecha_hasta": "2026\/02\/28",
+                "total_registros": 2908
+            },
+            "marzo": {
+                "fecha_desde": "2026\/03\/01",
+                "fecha_hasta": "2026\/03\/31",
+                "total_registros": 5549
+            },
+            "abril": {
+                "fecha_desde": "2026\/04\/01",
+                "fecha_hasta": "2026\/04\/30",
+                "total_registros": 3613
+            },
+            "mayo": {
+                "fecha_desde": "2026\/05\/01",
+                "fecha_hasta": "2026\/05\/31",
+                "total_registros": 3031
+            },
+            "junio": {
+                "fecha_desde": "2026\/06\/01",
+                "fecha_hasta": "2026\/06\/30",
+                "total_registros": 2367
+            }
+        }
+    },
+    "6": {
+        "nombre_empresa": "TRANSPORTADORA DE VALORES ANDINA LTDA",
+        "meses": {
+            "enero": {
+                "fecha_desde": "2026\/01\/01",
+                "fecha_hasta": "2026\/01\/31",
+                "total_registros": 84
+            },
+            "febrero": {
+                "fecha_desde": "2026\/02\/01",
+                "fecha_hasta": "2026\/02\/28",
+                "total_registros": 94
+            },
+            "marzo": {
+                "fecha_desde": "2026\/03\/01",
+                "fecha_hasta": "2026\/03\/31",
+                "total_registros": 50
+            },
+            "abril": {
+                "fecha_desde": "2026\/04\/01",
+                "fecha_hasta": "2026\/04\/30",
+                "total_registros": 83
+            },
+            "mayo": {
+                "fecha_desde": "2026\/05\/01",
+                "fecha_hasta": "2026\/05\/31",
+                "total_registros": 59
+            },
+            "junio": {
+                "fecha_desde": "2026\/06\/01",
+                "fecha_hasta": "2026\/06\/30",
+                "total_registros": 49
+            }
+        }
+    },
+    "7": {
+        "nombre_empresa": "CONSORCIO PEAJES CUNDINAMARCA 24",
+        "meses": {
+            "enero": {
+                "fecha_desde": "2026\/01\/01",
+                "fecha_hasta": "2026\/01\/31",
+                "total_registros": 0
+            },
+            "febrero": {
+                "fecha_desde": "2026\/02\/01",
+                "fecha_hasta": "2026\/02\/28",
+                "total_registros": 0
+            },
+            "marzo": {
+                "fecha_desde": "2026\/03\/01",
+                "fecha_hasta": "2026\/03\/31",
+                "total_registros": 0
+            },
+            "abril": {
+                "fecha_desde": "2026\/04\/01",
+                "fecha_hasta": "2026\/04\/30",
+                "total_registros": 0
+            },
+            "mayo": {
+                "fecha_desde": "2026\/05\/01",
+                "fecha_hasta": "2026\/05\/31",
+                "total_registros": 0
+            },
+            "junio": {
+                "fecha_desde": "2026\/06\/01",
+                "fecha_hasta": "2026\/06\/30",
+                "total_registros": 0
+            }
+        }
+    },
+    "8": {
+        "nombre_empresa": "CONSORCIO PEAJES CUNDINAMARCA 24",
+        "meses": {
+            "enero": {
+                "fecha_desde": "2026\/01\/01",
+                "fecha_hasta": "2026\/01\/31",
+                "total_registros": 29
+            },
+            "febrero": {
+                "fecha_desde": "2026\/02\/01",
+                "fecha_hasta": "2026\/02\/28",
+                "total_registros": 11
+            },
+            "marzo": {
+                "fecha_desde": "2026\/03\/01",
+                "fecha_hasta": "2026\/03\/31",
+                "total_registros": 5
+            },
+            "abril": {
+                "fecha_desde": "2026\/04\/01",
+                "fecha_hasta": "2026\/04\/30",
+                "total_registros": 41
+            },
+            "mayo": {
+                "fecha_desde": "2026\/05\/01",
+                "fecha_hasta": "2026\/05\/31",
+                "total_registros": 2
+            },
+            "junio": {
+                "fecha_desde": "2026\/06\/01",
+                "fecha_hasta": "2026\/06\/30",
+                "total_registros": 0
+            }
+        }
+    },
+    "9": {
+        "nombre_empresa": "CONSORCIO PEAJES 2526",
+        "meses": {
+            "enero": {
+                "fecha_desde": "2026\/01\/01",
+                "fecha_hasta": "2026\/01\/31",
+                "total_registros": 4967
+            },
+            "febrero": {
+                "fecha_desde": "2026\/02\/01",
+                "fecha_hasta": "2026\/02\/28",
+                "total_registros": 3524
+            },
+            "marzo": {
+                "fecha_desde": "2026\/03\/01",
+                "fecha_hasta": "2026\/03\/31",
+                "total_registros": 4106
+            },
+            "abril": {
+                "fecha_desde": "2026\/04\/01",
+                "fecha_hasta": "2026\/04\/30",
+                "total_registros": 11352
+            },
+            "mayo": {
+                "fecha_desde": "2026\/05\/01",
+                "fecha_hasta": "2026\/05\/31",
+                "total_registros": 9032
+            },
+            "junio": {
+                "fecha_desde": "2026\/06\/01",
+                "fecha_hasta": "2026\/06\/30",
+                "total_registros": 8903
+            }
+        }
+    }
+}
