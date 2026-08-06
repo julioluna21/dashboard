@@ -86,7 +86,6 @@ switch ($_REQUEST['op'] ?? '') {
                 "15" => $reg->total_venta,
                 "16" => $reg->kilometraje,
                 "17" => $reg->fecha_carga,
-                "18" => '', // botón de editar, lo conectamos en el paso de op=editar
             ];
         }
 
@@ -118,7 +117,7 @@ switch ($_REQUEST['op'] ?? '') {
         }
 
         // Borra lo ya cargado en ese rango antes de insertar lo nuevo
-        // $Consulta->borrarGasolinaRawPorRango($desde, $hasta);
+        $Consulta->borrarGasolinaRawPorRango($desde, $hasta);
 
         $resultado  = insertarGasolinaPorLotes($conexion, $registros);
         $insertados = $resultado['insertados'];

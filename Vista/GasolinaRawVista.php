@@ -157,8 +157,7 @@ include('header.php');
                 <th style="min-width:300px;">unidad_venta</th>
                 <th style="min-width:200px;">total_venta</th>
                 <th style="min-width:200px;">kilometraje</th>
-                <th style="min-width:200px;">fecha_carga</th>
-                <th style="min-width: 120px;">ACCIÓN</th>
+                <th style="min-width:200px;">fecha_carga</th>            
               </tr>
             </thead>
             <tbody id="tbody-ordenes">

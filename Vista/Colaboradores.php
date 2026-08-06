@@ -212,6 +212,9 @@ include('header.php');
                      <label>MOVIMIENTOS CONTABLES:</label>
                     <SPAN title="MOVIMIENTOS CONTABLES" style="float:right">
                     <input type="checkbox" class="" name="permiso[]" id="M41" value="M41"  /></SPAN><br>	    
+                     <label>Gasolina:</label>
+                    <SPAN title="Gasolina" style="float:right">
+                    <input type="checkbox" class="" name="permiso[]" id="M42" value="M42"  /></SPAN><br>	    
                         	
                             </div> 	  
 								
