@@ -91,17 +91,13 @@ include('header.php');
           </div>
           <div class="modal-body">
             <div class="form-group">
-              <label for="fechaInicioGasolina">Fecha inicio</label>
-              <input type="date" id="fechaInicioGasolina" class="form-control">
+              <label for="mesCargaGasolina">Mes a cargar</label>
+              <input type="month" id="mesCargaGasolina" class="form-control">
             </div>
             <div class="form-group">
-              <label for="fechaFinGasolina">Fecha fin</label>
-              <input type="date" id="fechaFinGasolina" class="form-control">
-            </div>
-            <div class="form-group">
-              <label>Archivo CSV</label>
+              <label>Archivo Excel</label>
               <div class="upload-csv-wrapper" id="uploadCsvWrapperGasolina">
-                <input type="file" id="archivoCsvGasolina" class="upload-csv-input" accept=".csv,text/csv" required>
+                <input type="file" id="archivoCsvGasolina" class="upload-csv-input" accept=".csv" required>
                 <label for="archivoCsvGasolina" class="upload-csv-label" id="uploadCsvLabelGasolina">
                   <i class="fa fa-cloud-upload upload-csv-icon"></i>
                   <span class="upload-csv-text">Arrastra el archivo aquí o <span class="upload-csv-link">selecciónalo</span></span>
@@ -131,7 +127,7 @@ include('header.php');
 
         <SPAN title="Cargar Registro" style="float:right">
           <button class="btn" style="background: #871F1B; color:white;" id="btnagregar" onclick="abrirModalCargaGasolina()">
-            <i class="fa fa-plus-square"></i> Cargar CSV
+            <i class="fa fa-plus-square"></i> Cargar csv
           </button>
         </SPAN>
 
@@ -140,7 +136,7 @@ include('header.php');
           <div class="clearfix"></div>
         </div><br><br>
 
-        <div class="panel-body" style="width:100%" id="listadoregistros">
+        <div class="panel-body table-responsive" style="width:100%" id="listadoregistros">
           <table id="tbllistado" class="table table-striped table-bordered table-hover" style="width:100%">
             <thead>
               <tr id="thead-ordenes">
@@ -179,7 +175,7 @@ include('header.php');
 <?php
 include('footer.php');
 ?>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>ahora
 <script type="text/javascript" src="../Ajax/gasolinaRawAjax.js"></script>
 
 <?php

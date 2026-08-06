@@ -805,7 +805,11 @@ public function detallecontrato($id)
                     return ejecutarConsultaSimpleFila($sql);//envia la sentencia a la funcion ejecutarConsulta que está en conexion.php
             }
     
-    	
-	
+
+            public function borrarGasolinaRawPorRango($fechaDesde, $fechaHasta)
+                {
+                        $sql = "DELETE FROM gasolina_raw WHERE fecha BETWEEN '$fechaDesde 00:00:00' AND '$fechaHasta 23:59:59'";
+                        return ejecutarConsulta($sql);
+                }	
 }
 ?>

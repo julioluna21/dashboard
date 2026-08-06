@@ -1,10 +1,10 @@
 var tabla,tabla2;
- var input = document.getElementById('archivoCsvFilas');
-  var label = document.getElementById('uploadCsvLabelFilas');
+ var input = document.getElementById('archivoCsvGasolina');
+  var label = document.getElementById('uploadCsvLabelGasolina');
   var texto = label ? label.querySelector('.upload-csv-text') : null;
-  var nombreBox = document.getElementById('uploadCsvFilenameFilas');
-  var nombreTexto = document.getElementById('uploadCsvFilenameTextFilas');
-  var btnQuitar = document.getElementById('uploadCsvRemoveFilas');
+  var nombreBox = document.getElementById('uploadCsvFilenameGasolina');
+  var nombreTexto = document.getElementById('uploadCsvFilenameTextGasolina');
+  var btnQuitar = document.getElementById('uploadCsvRemoveGasolina');
 
   function inicio() {
     listar();
@@ -68,25 +68,35 @@ function mostrarArchivo(nombre) {
 }
 
 function guardarCargaGasolina() {
-  const desde = $('#fechaInicioGasolina').val();
-  const hasta = $('#fechaFinGasolina').val();
+  const mes = $('#mesCargaGasolina').val(); // formato "YYYY-MM" que entrega <input type="month">
 
-  if (!desde || !hasta) {
-    alert('Selecciona la fecha inicio y la fecha fin.');
+  if (!mes) {
+    alert('Selecciona el mes a cargar.');
     return;
   }
   if (!input.files || !input.files[0]) {
-    alert('Selecciona un archivo CSV.');
+    alert('Selecciona un archivo Excel.');
     return;
   }
-  if (!confirm('¿Desea cargar este archivo? Se borrarán los registros existentes en ese rango de fechas y se cargarán los nuevos.')) {
+
+  // El mes siempre se carga completo: desde = día 1, hasta = último día de ese mes.
+  // new Date(año, mesNumero, 0) es el truco estándar de JS para "el día 0 del mes
+  // siguiente", que cae exactamente en el último día del mes que queremos.
+  const [anio, mesNumero] = mes.split('-').map(Number);
+  const desde = mes + '-01';
+  const ultimoDia = new Date(anio, mesNumero, 0).getDate();
+  const hasta = mes + '-' + String(ultimoDia).padStart(2, '0');
+
+  if (!confirm('¿Desea cargar este archivo? Se borrarán los registros existentes de ' + mes + ' y se cargarán los nuevos.')) {
     return;
   }
 
   $('#btnGuardarGasolina').prop('disabled', true).text('Cargando...');
   $('#cargandoGuardarGasolina').show();
 
-  procesarCsvGasolina(desde, hasta, function (filas) {
+  Rcorrerarchivo(function (filas)
+  {
+    console.log(filas);
     $.ajax({
       url: '../Control/GasolinaRawControl.php',
       method: 'POST',
@@ -106,70 +116,167 @@ function guardarCargaGasolina() {
       $('#btnGuardarGasolina').prop('disabled', false).text('Guardar');
       $('#cargandoGuardarGasolina').hide();
     });
-  });
+});
 }
 
-function procesarCsvGasolina(desde, hasta, callback) {
-  const filas = [];
+// Excel guarda una fecha como un número: cantidad de días desde el 30/12/1899
+// (con la hora como fracción del día). 25569 es la cantidad de días entre esa
+// fecha base de Excel y el 01/01/1970 (la base de Date de JS) -- restándolo
+// convertimos "días desde Excel" a "días desde JS" en un solo paso.
+function excelSerialADate(serial) {
+  const diasDesdeEpocaJs = Math.floor(serial - 25569);
+  const fechaBase = new Date(diasDesdeEpocaJs * 86400 * 1000);
 
-  Papa.parse(input.files[0], {
+  const fraccionDia = serial - Math.floor(serial);
+  let segundosTotales = Math.round(86400 * fraccionDia);
+  const horas = Math.floor(segundosTotales / 3600);
+  segundosTotales -= horas * 3600;
+  const minutos = Math.floor(segundosTotales / 60);
+  const segundos = segundosTotales - minutos * 60;
+
+  return new Date(Date.UTC(
+    fechaBase.getUTCFullYear(), fechaBase.getUTCMonth(), fechaBase.getUTCDate(),
+    horas, minutos, segundos
+  ));
+}
+
+function formatearFechaDesdeDate(fecha) {
+  const pad = function (n) { return String(n).padStart(2, '0'); };
+  return fecha.getUTCFullYear() + '-' + pad(fecha.getUTCMonth() + 1) + '-' + pad(fecha.getUTCDate())
+    + ' ' + pad(fecha.getUTCHours()) + ':' + pad(fecha.getUTCMinutes()) + ':' + pad(fecha.getUTCSeconds());
+}
+
+// La columna `fecha` en el Excel real de gasolina NO viene siempre igual: la mayoría
+// de las filas la traen como número de serie de Excel (fecha real de la celda), pero
+// algunas filas cargadas a mano la traen como texto "DD/MM/YYYY HH:MM:SS". Hay que
+// soportar los dos casos -- confirmado revisando el archivo real, no es hipotético.
+function normalizarFechaGasolina(valor) {
+  if (valor === null || valor === undefined || valor === '') return '';
+
+  if (typeof valor === 'number') {
+    return formatearFechaDesdeDate(excelSerialADate(valor));
+  }
+
+  valor = String(valor).trim();
+  const partes = valor.split(' ');
+  const fechaParte = partes[0];
+  const horaParte = partes[1] || '00:00:00';
+
+  const dmy = fechaParte.split('/');
+  if (dmy.length !== 3) return '';
+
+  const dia = dmy[0].padStart(2, '0');
+  const mes = dmy[1].padStart(2, '0');
+  const anio = dmy[2];
+
+  return anio + '-' + mes + '-' + dia + ' ' + horaParte;
+}
+
+function listar(estado)
+{
+    tabla=$('#tbllistado').dataTable(//Carga variable con datos datatable
+    {
+            "aProcessing": true,//Activamos el procesamiento del datatables
+        "aServerSide": true,//Paginación y filtrado realizados por el servidor
+        dom: 'Bfrtip',//Definimos los elementos del control de tabla Bfrtip
+        buttons: [
+                       
+                    ],
+         language: {
+      search: 'Buscar ',
+      paginate: {
+        first: 'Primero',
+        previous: 'Anterior',
+        next: 'Siguiente',
+        last: 'Último'
+      }},
+        "ajax"://metodo ajax
+                            {
+                                    url: '../Control/GasolinaRawControl.php?op=listar',//pagina que realiza la operación
+                                    type : "get",//tipo de envio de datos
+                                    dataType : "json",//tipo de datos
+                                    error: function(e){//si error muestra mensaje
+                                            console.log(e.responseText);
+                                    }
+                            },
+            "bDestroy": true,
+            "iDisplayLength": 10,//Paginación
+        "order": [[ 0, "asc" ]]//Ordenar (columna,orden)
+    }).DataTable();
+   
+}
+
+function Rcorrerarchivo(callback) {
+  if (!input) return;
+  var archivo = input.files && input.files[0];
+  if (!archivo) {
+    alert('Seleccioná un archivo CSV.');
+    return;
+  }
+  var obj = [];
+
+ 
+  Papa.parse(archivo, {
     header: false,
     skipEmptyLines: true,
-    complete: function (resultado) {
+    complete: async function (resultado) {
       const datos = resultado.data;
+      const totalFilas = datos.length - 1;
+ 
+      for (let i = 1; i < datos.length; i++) {
+      const fila = datos[i];
 
-      for (let i = 1; i < datos.length; i++) {  // i=1: nos saltamos la fila de encabezados
-        const fila = datos[i];
+      const cliente = String(fila[0] ?? '').trim();
+      const proveedor = String(fila[1] ?? '').trim();
+      const nro_identificacion = String(fila[2] ?? '').trim();
+      const codigo_sap = String(fila[3] ?? '').trim();
+      const no_venta = String(fila[4] ?? '').trim();
+      const fechaOriginal = fila[5];
+      const fecha = normalizarFechaGasolina(fechaOriginal);
+      const estacion = String(fila[6] ?? '').trim();
+      const regional = String(fila[7] ?? '').trim();
+      const id_eds = String(fila[8] ?? '').trim();
+      const placa = String(fila[9] ?? '').trim();
+      const conductor = String(fila[10] ?? '').trim();
+      const combustible = String(fila[11] ?? '').trim();
+      const cantidad = String(fila[12] ?? '').trim();
+      const precio = String(fila[13] ?? '').trim();
+      const unidad_venta = String(fila[14] ?? '').trim();
+      const total_venta = String(fila[15] ?? '').trim();
+      const kilometraje = String(fila[16] ?? '').trim();
+       
 
-        const cliente = (fila[0] || '').trim();
-        const proveedor = (fila[1] || '').trim();
-        const nro_identificacion = (fila[2] || '').trim();
-        const codigo_sap = (fila[3] || '').trim();
-        const no_venta = (fila[4] || '').trim();
-        const fecha = (fila[5] || '').trim();
-        const estacion = (fila[6] || '').trim();
-        const regional = (fila[7] || '').trim();
-        const id_eds = (fila[8] || '').trim();
-        const placa = (fila[9] || '').trim();
-        const conductor = (fila[10] || '').trim();
-        const combustible = (fila[11] || '').trim();
-        const cantidad = (fila[12] || '').trim();
-        const precio = (fila[13] || '').trim();
-        const unidad_venta = (fila[14] || '').trim();
-        const total_venta = (fila[15] || '').trim();
-        const kilometraje = (fila[16] || '').trim();
-
-        if (fecha < desde || fecha > hasta) {
-          alert('Error: la fila ' + (i + 1) + ' tiene una fecha fuera del rango seleccionado (' + fecha + ').');
-          return; // no llama al callback -> no se manda nada al servidor
-        }
-
-        filas.push({
-          cliente: cliente,
-          // ... el resto de campos con el mismo nombre que usa la columna en gasolina_raw
-          kilometraje: kilometraje
-        });
+      
+          obj.push({
+        cliente: cliente,
+        proveedor: proveedor,
+        nro_identificacion: nro_identificacion,
+        codigo_sap: codigo_sap,
+        no_venta: no_venta,
+        fecha: fecha,
+        estacion: estacion,
+        regional: regional,
+        id_eds: id_eds,
+        placa: placa,
+        conductor: conductor,
+        combustible: combustible,
+        cantidad: cantidad,
+        precio: precio,
+        unidad_venta: unidad_venta,
+        total_venta: total_venta,
+        kilometraje: kilometraje
+      });
       }
-
-      callback(filas);
+ 
+      // Ejecutar callback con los datos procesados
+      if (typeof callback === "function") {
+        callback(obj);
+      }
+    },
+    error: function (err) {
+      console.error("Error al procesar CSV:", err);
     }
   });
 }
+inicio();
 
-function listar() {
-  tabla = $('#tbllistado').dataTable({
-    "aProcessing": true,
-    "aServerSide": true,
-    dom: 'Bfrtip',
-    buttons: [],
-    "ajax": {
-      url: '../Control/GasolinaRawControl.php?op=listar',
-      type: "get",
-      dataType: "json",
-      error: function (e) { console.log(e.responseText); }
-    },
-    "bDestroy": true,
-    "iDisplayLength": 10,
-    "order": [[5, "desc"]]
-  }).DataTable();
-}
