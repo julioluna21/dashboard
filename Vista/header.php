@@ -124,9 +124,11 @@
            <li> <a href="NovedadesVista.php" >Novedades<i class="fa fa-sticky-note" aria-hidden="true" ></i></a> </li><?php }?>
         <?php if(in_array("M39",$modulosAcceso)){ ?>			
            <li> <a href="MapaUbicaciones.php" >Mapa Tolis<i class="fa fa-map-marker" aria-hidden="true" ></i></a> </li><?php }?>
-        <?php if(in_array("M41",$modulosAcceso)){ ?>			
-           <li> <a href="MovimientosContablesVista.php" >Movimientos Contables<i class="fa fa-book" aria-hidden="true" ></i></a> </li><?php }?>   
-					
+        <?php if(in_array("M41",$modulosAcceso)){ ?>
+           <li> <a href="MovimientosContablesVista.php" >Movimientos Contables<i class="fa fa-book" aria-hidden="true" ></i></a> </li><?php }?>
+        <?php if(in_array("M42",$modulosAcceso)){ ?>
+           <li> <a href="GasolinaRawVista.php" >Gasolina<i class="fa fa-tint" aria-hidden="true" ></i></a> </li><?php }?>
+
         <?php if(in_array("M3",$modulosAcceso) or in_array("M4",$modulosAcceso) or in_array("M5",$modulosAcceso) or in_array("M6",$modulosAcceso) or in_array("M32",$modulosAcceso)){ ?><li>
         <a href="#" class="toggle-submenu"> Configuración <i class="fa fa-cog"></i></a>
         <ul class="submenu">

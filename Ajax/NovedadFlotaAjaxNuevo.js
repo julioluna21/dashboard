@@ -294,7 +294,8 @@ function mostrar(idnovedad)
 	$("#novedad").val(data.NOVEDAD); 	
 	$("#contingencia").val(data.CONTIGENCIA); 		 
 	$("#palacacont").val(data.PLACACONTIGENCIA); 
-    $("#Sistema").val(data.SISTEMA); 			 
+    $("#Sistema").val(data.SISTEMA);
+    $("#responsable").val(data.RESPONSABLE); 	 			 
     $('#vehiculo').val(data.ID_VEHICULO_NOVEDAD).trigger('change'); 
     $("#fechasdato").hide();	
 	$("#fechainicio").removeAttr('required');	

@@ -1,4 +1,4 @@
-var tabla,tabla2;
+var tabla;
  var input = document.getElementById('archivoCsvFilas');
   var label = document.getElementById('uploadCsvLabelFilas');
   var texto = label ? label.querySelector('.upload-csv-text') : null;
@@ -15,26 +15,10 @@ function inicio() {
             dropdownParent: $('#modalGenerarFilas')
 }); 
 
-$('#anio').select2({
-    width: '100%',
-            placeholder: 'Seleccione año...',
-            allowClear: true,
-            dropdownParent: $('#modalcierremes')
-}); 
-
-$('#mes').select2({
-    width: '100%',
-            placeholder: 'Seleccione mes...',
-            allowClear: true,
-            dropdownParent: $('#modalcierremes')
-}); 
-
 $.post("../Control/MovimiesntosContablesControlTem.php?tipo=ultimafecha", function (response) {
   response = JSON.parse(response);
   if (response) {$("#smallFecha").text('Última fecha de registro: ' + response.Fecha_docto);}
 });
-
-$('#mesesCerrados').hide(); 
 
 if (!input || !label) return;
 
@@ -120,51 +104,64 @@ function guardarGenerarFilas() {
   btnCancelar.prop('disabled', true);
   $('#cargandoGenerarFilas').show();
   Rcorrerarchivo(function(datosProcesados) {
-   console.log(" Datos validados:", datosProcesados);
+   //console.log(" Datos validados:", datosProcesados);
 
+   const TAM_LOTE = 400; // filas por request, para no superar el límite de tamaño del servidor (413)
+   const lotes = [];
+   for (let i = 0; i < datosProcesados.length; i += TAM_LOTE) {
+     lotes.push(datosProcesados.slice(i, i + TAM_LOTE));
+   }
 
-   $.ajax({
-    url: '../Control/MovimiesntosContablesControlTem.php',
-    method: 'POST',
-    data: {
-      tipo: 'registrarMovimientoEmpresa',
-      idCia: idCia,
-      desde: desde.replace(/-/g, '/'),
-      hasta: hasta.replace(/-/g, '/'),
-      registros: JSON.stringify(datosProcesados)
-    }
-  }).done(function (response) {
-    alert(response.mensaje || 'Proceso finalizado.');
-    $('#modalGenerarFilas').modal('hide');
-    if (tabla && tabla.ajax) {
-      tabla.ajax.reload();
-    }
-  }).fail(function (err) {
-    console.error('Error al generar movimientos:', err);
-    alert('Ocurrió un error al registrar la información.');
-  }).always(function () {
-    btnGuardar.prop('disabled', false).text('Guardar');
-    btnCancelar.prop('disabled', false);
-    $('#cargandoGenerarFilas').hide();
-  });
+   let totalInsertados = 0;
+   let totalOmitidos = 0;
+
+   function enviarLote(indice) {
+     if (indice >= lotes.length) {
+       alert('Proceso finalizado: ' + totalInsertados + ' registros insertados, ' + totalOmitidos + ' omitidos (duplicados o error).');
+       $('#modalGenerarFilas').modal('hide');
+       if (tabla && tabla.ajax) {
+         tabla.ajax.reload();
+       }
+       btnGuardar.prop('disabled', false).text('Guardar');
+       btnCancelar.prop('disabled', false);
+       $('#cargandoGenerarFilas').hide();
+       return;
+     }
+
+     $('#cargandoGenerarFilas').html('<i class="fa fa-spinner fa-spin"></i> Cargando lote ' + (indice + 1) + ' de ' + lotes.length + '...');
+
+     $.ajax({
+       url: '../Control/MovimiesntosContablesControlTem.php',
+       method: 'POST',
+       dataType: 'json',
+       data: {
+         tipo: 'registrarMovimientoEmpresa',
+         idCia: idCia,
+         desde: desde.replace(/-/g, '/'),
+         hasta: hasta.replace(/-/g, '/'),
+         borrar: indice === 0 ? '1' : '0', // solo el primer lote borra el rango existente
+         registros: JSON.stringify(lotes[indice])
+       }
+     }).done(function (response) {
+       totalInsertados += Number(response.insertados || 0);
+       totalOmitidos += Number(response.omitidos || 0);
+       enviarLote(indice + 1);
+     }).fail(function (err) {
+       console.error('Error al generar movimientos (lote ' + (indice + 1) + '):', err);
+       alert('Ocurrió un error al registrar el lote ' + (indice + 1) + ' de ' + lotes.length + '. Insertados hasta el momento: ' + totalInsertados + '.');
+       btnGuardar.prop('disabled', false).text('Guardar');
+       btnCancelar.prop('disabled', false);
+       $('#cargandoGenerarFilas').hide();
+     });
+   }
+
+   enviarLote(0);
 });
   
 
 }
 
 
-function textoCorto(texto, max) {
-  max = max || 60;
-  if (!texto) return '';
-  var str = String(texto).trim();
-  if (str.length <= max) return str;
-  var completo = str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  return '<span style="cursor:pointer;" '
-    + 'data-toggle="popover" data-trigger="click" data-placement="top" '
-    + 'data-container="body" title="Texto completo" '
-    + 'data-content="' + completo + '">'
-    + str.substring(0, max) + '&hellip;</span>';
-}
 
 
 
@@ -262,8 +259,8 @@ function mostrarArchivo(nombre) {
   }
   var obj = [];
 
-  const fechaInicio = $('#fechaInicioFilas').val().replace(/-/g, '/');
-  const fechaFin = $('#fechaFinFilas').val().replace(/-/g, '/');
+  const fechaInicio = $('#fechaInicioFilas').val();
+  const fechaFin = $('#fechaFinFilas').val();
   const empresaSeleccionada = $('#selEmpresaFilas').val();
 
   Papa.parse(archivo, {
@@ -414,7 +411,7 @@ function formatearFecha(valor) {
   mes = mes.padStart(2, "0");
   dia = dia.padStart(2, "0");
 
-  return `${año}/${mes}/${dia}`;
+  return `${año}-${mes}-${dia}`;
 }
 
 

@@ -136,21 +136,12 @@ function obtenerPaginasEnParalelo(array $urls, array $headersArray) {
 // posible. Se pide la página 1 sola para saber cuántas páginas hay en total, y el resto se
 // piden en paralelo (5 a la vez) en vez de una por una, para entrar dentro del timeout fijo
 // de ~5 min del hosting.
-//
-// La paginación de Siesa no es estable: entre llamadas puede repetir registros de una página
-// en otra, u omitir alguno por completo, sin avisar. Por eso, al final se deduplica por
-// f351_rowid y se compara la cantidad resultante contra "total_registros" que reporta la
-// propia API; si no coincide, se reintenta la traída completa (hasta 3 veces) en vez de
-// devolver una lista incompleta como si estuviera bien.
-//
-// Con 1000 x 100 páginas caben 100.000 registros por rango de fechas; si "total_páginas" aun
-// así lo supera, se parte el rango por la mitad y se une la información recursivamente
-// (cada mitad se reconcilia por su cuenta).
+// Con 1000 x 100 páginas caben 100.000 registros por rango de fechas; si "total_páginas"
+// aun así lo supera, se parte el rango por la mitad y se une la información recursivamente.
 function obtenerMovimientosContables($fechaDesde, $fechaHasta, $idCia, $headers) {
     $tamPag = 1000;
     $maxPaginas = 100;
     $concurrencia = 5;
-    $intentosReconciliacion = 3;
 
     $headersArray = explode("\r\n", $headers);
 
@@ -167,114 +158,81 @@ function obtenerMovimientosContables($fechaDesde, $fechaHasta, $idCia, $headers)
             ]);
     };
 
-    for ($intento = 1; $intento <= $intentosReconciliacion; $intento++) {
-        $resultadoPag1 = obtenerPaginaSiesa($construirUrl(1), $headersArray);
+    $resultadoPag1 = obtenerPaginaSiesa($construirUrl(1), $headersArray);
 
-        if ($resultadoPag1 === null) {
-            error_log("obtenerMovimientosContables: fallo al traer la página 1, compañía {$idCia}, fecha {$fechaDesde}, intento {$intento}");
-            continue;
-        }
-
-        if ($resultadoPag1['sinRegistros']) {
-            return [];
-        }
-
-        $registros      = $resultadoPag1['registros'];
-        $totalPaginas   = $resultadoPag1['totalPaginas'];
-        $totalRegistros = $resultadoPag1['totalRegistros'];
-
-        if ($totalPaginas === null || $totalPaginas <= 1) {
-            return $registros;
-        }
-
-        if ($totalPaginas > $maxPaginas) {
-            $desdeTs = strtotime($fechaDesde);
-            $hastaTs = strtotime($fechaHasta);
-
-            if ($hastaTs > $desdeTs) {
-                $diasTotales = ($hastaTs - $desdeTs) / 86400;
-                $medioTs = $desdeTs + (int) floor($diasTotales / 2) * 86400;
-
-                $fechaMedio1 = date('Y/m/d', $medioTs);
-                $fechaMedio2 = date('Y/m/d', $medioTs + 86400);
-
-                $primeraMitad = obtenerMovimientosContables($fechaDesde, $fechaMedio1, $idCia, $headers);
-                $segundaMitad = obtenerMovimientosContables($fechaMedio2, $fechaHasta, $idCia, $headers);
-
-                if ($primeraMitad === null || $segundaMitad === null) {
-                    return null;
-                }
-
-                return array_merge($primeraMitad, $segundaMitad);
-            }
-
-            // Un solo día ya no se puede partir más y aun así supera el tope de páginas:
-            // se señala como error en vez de devolver información incompleta en silencio.
-            error_log("obtenerMovimientosContables: {$fechaDesde} compañía {$idCia} supera {$maxPaginas} páginas de {$tamPag} registros y no se puede partir más");
-            return null;
-        }
-
-        $fetchOk = true;
-
-        for ($inicio = 2; $inicio <= $totalPaginas; $inicio += $concurrencia) {
-            $fin = min($inicio + $concurrencia - 1, $totalPaginas);
-
-            $urls = [];
-            for ($numPag = $inicio; $numPag <= $fin; $numPag++) {
-                $urls[$numPag] = $construirUrl($numPag);
-            }
-
-            $resultadosTanda = obtenerPaginasEnParalelo($urls, $headersArray);
-
-            foreach ($resultadosTanda as $numPag => $resultado) {
-                // Con varias solicitudes grandes al mismo tiempo, de vez en cuando una llega
-                // cortada o corrupta; se reintenta esa página sola (sin concurrencia) un par
-                // de veces antes de dar la traída completa por fallida.
-                for ($intentoPag = 1; $resultado === null && $intentoPag <= 2; $intentoPag++) {
-                    error_log("obtenerMovimientosContables: reintentando página {$numPag} (intento {$intentoPag}), compañía {$idCia}, fecha {$fechaDesde}");
-                    $resultado = obtenerPaginaSiesa($urls[$numPag], $headersArray);
-                }
-
-                if ($resultado === null) {
-                    error_log("obtenerMovimientosContables: fallo en página {$numPag} tras reintentos, compañía {$idCia}, fecha {$fechaDesde}, intento {$intento}");
-                    $fetchOk = false;
-                    break 2;
-                }
-                if (!$resultado['sinRegistros']) {
-                    $registros = array_merge($registros, $resultado['registros']);
-                }
-            }
-        }
-
-        if (!$fetchOk) {
-            continue;
-        }
-
-        // La API puede repetir el mismo movimiento en más de una página; se deduplica por
-        // f351_rowid, que identifica cada línea de movimiento de forma única.
-        $vistos = [];
-        $registrosUnicos = [];
-        foreach ($registros as $registro) {
-            $rowId = $registro['f351_rowid'] ?? null;
-            if ($rowId !== null) {
-                if (isset($vistos[$rowId])) {
-                    continue;
-                }
-                $vistos[$rowId] = true;
-            }
-            $registrosUnicos[] = $registro;
-        }
-
-        if ($totalRegistros !== null && count($registrosUnicos) !== (int) $totalRegistros) {
-            error_log("obtenerMovimientosContables: el conteo no coincide tras deduplicar (obtenidos=" . count($registrosUnicos) . ", esperados={$totalRegistros}), compañía {$idCia}, fecha {$fechaDesde}, intento {$intento} de {$intentosReconciliacion}");
-            continue;
-        }
-
-        return $registrosUnicos;
+    if ($resultadoPag1 === null) {
+        error_log("obtenerMovimientosContables: fallo al traer la página 1, compañía {$idCia}, fecha {$fechaDesde}");
+        return null;
     }
 
-    error_log("obtenerMovimientosContables: no se logró traer el conteo completo tras {$intentosReconciliacion} intentos, compañía {$idCia}, fecha {$fechaDesde}");
-    return null;
+    if ($resultadoPag1['sinRegistros']) {
+        return [];
+    }
+
+    $registros    = $resultadoPag1['registros'];
+    $totalPaginas = $resultadoPag1['totalPaginas'];
+
+    if ($totalPaginas === null || $totalPaginas <= 1) {
+        return $registros;
+    }
+
+    if ($totalPaginas > $maxPaginas) {
+        $desdeTs = strtotime($fechaDesde);
+        $hastaTs = strtotime($fechaHasta);
+
+        if ($hastaTs > $desdeTs) {
+            $diasTotales = ($hastaTs - $desdeTs) / 86400;
+            $medioTs = $desdeTs + (int) floor($diasTotales / 2) * 86400;
+
+            $fechaMedio1 = date('Y/m/d', $medioTs);
+            $fechaMedio2 = date('Y/m/d', $medioTs + 86400);
+
+            $primeraMitad = obtenerMovimientosContables($fechaDesde, $fechaMedio1, $idCia, $headers);
+            $segundaMitad = obtenerMovimientosContables($fechaMedio2, $fechaHasta, $idCia, $headers);
+
+            if ($primeraMitad === null || $segundaMitad === null) {
+                return null;
+            }
+
+            return array_merge($primeraMitad, $segundaMitad);
+        }
+
+        // Un solo día ya no se puede partir más y aun así supera el tope de páginas:
+        // se señala como error en vez de devolver información incompleta en silencio.
+        error_log("obtenerMovimientosContables: {$fechaDesde} compañía {$idCia} supera {$maxPaginas} páginas de {$tamPag} registros y no se puede partir más");
+        return null;
+    }
+
+    for ($inicio = 2; $inicio <= $totalPaginas; $inicio += $concurrencia) {
+        $fin = min($inicio + $concurrencia - 1, $totalPaginas);
+
+        $urls = [];
+        for ($numPag = $inicio; $numPag <= $fin; $numPag++) {
+            $urls[$numPag] = $construirUrl($numPag);
+        }
+
+        $resultadosTanda = obtenerPaginasEnParalelo($urls, $headersArray);
+
+        foreach ($resultadosTanda as $numPag => $resultado) {
+            // Con varias solicitudes grandes al mismo tiempo, de vez en cuando una llega
+            // cortada o corrupta; se reintenta esa página sola (sin concurrencia) un par
+            // de veces antes de dar el proceso completo por fallido.
+            for ($intentoPag = 1; $resultado === null && $intentoPag <= 2; $intentoPag++) {
+                error_log("obtenerMovimientosContables: reintentando página {$numPag} (intento {$intentoPag}), compañía {$idCia}, fecha {$fechaDesde}");
+                $resultado = obtenerPaginaSiesa($urls[$numPag], $headersArray);
+            }
+
+            if ($resultado === null) {
+                error_log("obtenerMovimientosContables: fallo en página {$numPag} tras reintentos, compañía {$idCia}, fecha {$fechaDesde}");
+                return null;
+            }
+            if (!$resultado['sinRegistros']) {
+                $registros = array_merge($registros, $resultado['registros']);
+            }
+        }
+    }
+
+    return $registros;
 }
 
 // Inserta $filas en movimientos_contables en lotes de $tamLote filas por sentencia, en vez

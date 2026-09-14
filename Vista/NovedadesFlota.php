@@ -146,7 +146,8 @@ include('header.php');
 								<option value="BACKUP">BACKUP</option>
 							    <option value="VEHICULO ALQUILADO">VEHICULO ALQUILADO</option>
 								<option value="NO REQUIERE">NO REQUIERE</option>	 
-								<option value="REDISTRIBUCIÓN">REDISTRIBUCIÓN</option>	 	 
+								<option value="REDISTRIBUCIÓN">REDISTRIBUCIÓN</option>	 
+                <option value="SIN REEMPLAZO">SIN REEMPLAZO</option>	 	 
 							   </select>	
                                 
                               </div>		
@@ -157,6 +158,11 @@ include('header.php');
                              <div class="form-group col-lg-6 col-md-6 col-sm-6 col-xs-12">
                                 <label>Placa Vehiculo:</label>
 								<input type="text" class="form-control" name="palacacont" id="palacacont" >
+                              </div> 
+
+                  <div class="form-group col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                              <label>Responsable:</label>
+								<input type="text" class="form-control" name="responsable" id="responsable" >
                               </div> 
 				
                             </div>
@@ -328,6 +334,7 @@ include('header.php');
 							<th >OPERATIVIDAD</th>
 							<th >CONTIGENCÍA</th>
                             <th >PLACA CONTIGENCÍA</th>
+                            <th >RESPONSABLE</th>
 							<th >FECHA INICIAL</th>
                             <th >FECHA FINAL</th>
 						    <th >HORAS TRANSCURRIDOS</th>

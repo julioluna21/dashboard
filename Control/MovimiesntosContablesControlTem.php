@@ -194,12 +194,18 @@ switch ($_REQUEST['tipo'] ?? '') {
         ];
       }
 
-      // Borra lo ya registrado para esta empresa en este rango antes de insertar lo nuevo
-      $ApiSiesa->borrarMovimientosPorRango(
-        $idCia,
-        date('Y-m-d', strtotime($fechaDesde)),
-        date('Y-m-d', strtotime($fechaHasta))
-      );
+      // El CSV se envía al servidor en varios lotes (para no exceder el límite de tamaño
+      // del request). Solo el primer lote debe borrar lo ya registrado en el rango; si cada
+      // lote borrara, se perdería lo insertado por los lotes anteriores.
+      $borrarRango = filter_var($_REQUEST['borrar'] ?? '1', FILTER_VALIDATE_BOOLEAN);
+
+      if ($borrarRango) {
+        $ApiSiesa->borrarMovimientosPorRango(
+          $idCia,
+          date('Y-m-d', strtotime($fechaDesde)),
+          date('Y-m-d', strtotime($fechaHasta))
+        );
+      }
 
       $resultadoLotes = insertarMovimientosPorLotes($conexion, $filas);
       $insertados     = $resultadoLotes['insertados'];

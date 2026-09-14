@@ -19,6 +19,7 @@ $contigencia=isset($_POST["contingencia"])?limpiarCadena($_POST["contingencia"])
 $placacotigencia=isset($_POST["palacacont"])?limpiarCadena($_POST["palacacont"]):"";
 $sistema=isset($_POST["Sistema"])?limpiarCadena($_POST["Sistema"]):"";
 $estado=isset($_GET["estado"])?limpiarCadena($_GET["estado"]):"";
+$responsable=isset($_POST["responsable"])?limpiarCadena($_POST["responsable"]):"";
 $fechahora=date("Y-m-d H:i:s");
 $table_name = "NOVEDAD_FLOTA";
 
@@ -42,17 +43,22 @@ switch ($_GET["op"]) {
 		 if($operatividad=="OPERATIVO"){
 		 $contigencia="NO REQUIERE";
 		 $placacotigencia="N/D";	 
+     $responsable="N/D";
 		 } 
-		 if($contigencia=="NO REQUIERE"){
+		 if($contigencia=="NO REQUIERE" OR $contigencia=="SIN REEMPLAZO"){
 		 $placacotigencia="N/D";	 
 		 } 
 		  
 		 if($placacotigencia==""){
 		 $placacotigencia="N/D";	 
 		 } 
+
+    if($responsable==""){
+		 $responsable="N/D";	 
+		 } 
 		  
 		  
-		 $data_values = array('ID_VEHICULO_NOVEDAD'=>$vehiculo,"TIPO_NOVEDAD"=>$tiponovedad,"FECHA_HORA_INICIO"=>$fechainical,"FECHA_HORA_FIN"=>$frechafinal,"NOVEDAD"=>$Novedad,"ESTADO_NOVEDADA"=>1,"HORAS_TRANSCURRIDAS"=>$horas,"OPERATIVIDAD"=>$operatividad,"CONTIGENCIA"=>$contigencia,"PLACACONTIGENCIA"=>$placacotigencia,"SISTEMA"=>$sistema);
+		 $data_values = array('ID_VEHICULO_NOVEDAD'=>$vehiculo,"TIPO_NOVEDAD"=>$tiponovedad,"FECHA_HORA_INICIO"=>$fechainical,"FECHA_HORA_FIN"=>$frechafinal,"NOVEDAD"=>$Novedad,"ESTADO_NOVEDADA"=>1,"HORAS_TRANSCURRIDAS"=>$horas,"OPERATIVIDAD"=>$operatividad,"CONTIGENCIA"=>$contigencia,"PLACACONTIGENCIA"=>$placacotigencia,"SISTEMA"=>$sistema,"REPONSABLE"=>$responsable);
          $rspta = $Novedades->insertar($table_name, $data_values);
          echo $rspta ? "Registro exitoso" : "No se pudo realizar el registro";	 
 		  
@@ -71,7 +77,7 @@ switch ($_GET["op"]) {
 		 } 
 		  
 		  
-		 $data_values = array('ID_VEHICULO_NOVEDAD'=>$vehiculo,"TIPO_NOVEDAD"=>$tiponovedad,"NOVEDAD"=>$Novedad,"OPERATIVIDAD"=>$operatividad,"CONTIGENCIA"=>$contigencia,"PLACACONTIGENCIA"=>$placacotigencia,"SISTEMA"=>$sistema);
+		 $data_values = array('ID_VEHICULO_NOVEDAD'=>$vehiculo,"TIPO_NOVEDAD"=>$tiponovedad,"NOVEDAD"=>$Novedad,"OPERATIVIDAD"=>$operatividad,"CONTIGENCIA"=>$contigencia,"PLACACONTIGENCIA"=>$placacotigencia,"SISTEMA"=>$sistema,"REPONSABLE"=>$responsable);
         $where_condition = array('ID_NOVEDAD' => $id);
         $rspta = $Novedades->editar($table_name, $data_values, $where_condition);
         echo $rspta? "Registro actulizado": "Error no se actulizo el registro";
@@ -136,12 +142,13 @@ switch ($_GET["op"]) {
 			  "3"=>$reg->OPERATIVIDAD,
 			  "4"=>$reg->CONTIGENCIA,
 			  "5"=>$reg->PLACACONTIGENCIA,	
-              "6"=>$reg->FECHA_HORA_INICIO,
-			  "7"=>$reg->FECHA_HORA_FIN,
-			  "8"=>round($reg->HORAS_TRANSCURRIDAS/60)." Horas",	
+        "6"=>$reg->REPONSABLE,	
+        "7"=>$reg->FECHA_HORA_INICIO,
+			  "8"=>$reg->FECHA_HORA_FIN,
+			  "9"=>round($reg->HORAS_TRANSCURRIDAS/60)." Horas",	
 			  //"8"=>$reg->NOVEDAD,
-				"9"=>'<SPAN title="Novedades"><button type="button" class="btn btn-light" data-toggle="modal" data-target="#modal-nota" onclick="mostrarcontenido('.$reg->ID_NOVEDAD.')"><i class="fa fa-sticky-note" style=""></i></button></SPAN>',
-              "10"=>$bot
+				"10"=>'<SPAN title="Novedades"><button type="button" class="btn btn-light" data-toggle="modal" data-target="#modal-nota" onclick="mostrarcontenido('.$reg->ID_NOVEDAD.')"><i class="fa fa-sticky-note" style=""></i></button></SPAN>',
+              "11"=>$bot
             );
             
           }

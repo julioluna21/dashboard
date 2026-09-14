@@ -347,24 +347,6 @@ function insertarMovimientosPorLotes($conexion, $filas, $anio, $tamLote = 500) {
           exit;
         }
 
-        // La API de Siesa puede devolver el mismo movimiento en más de una página
-        // (se confirmó que su paginación no es estable, sobre todo con tamPag alto);
-        // se deduplica por f351_rowid, que identifica cada línea de movimiento.
-        $vistos = [];
-        $registrosUnicos = [];
-        foreach ($todosLosRegistros as $registro) {
-          $rowId = $registro['f351_rowid'] ?? null;
-          if ($rowId !== null) {
-            if (isset($vistos[$rowId])) {
-              continue;
-            }
-            $vistos[$rowId] = true;
-          }
-          $registrosUnicos[] = $registro;
-        }
-        $todosLosRegistros = $registrosUnicos;
-        unset($vistos, $registrosUnicos);
-
         $cuentas             = [];
         $idsCentrosCosto     = [];
         $idsCentrosOperacion = [];
