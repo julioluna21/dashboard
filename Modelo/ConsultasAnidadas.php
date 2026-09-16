@@ -804,8 +804,16 @@ public function detallecontrato($id)
                     $sql = "SELECT movimientos_contables.Fecha_docto FROM movimientos_contables ORDER BY Fecha_docto DESC LIMIT 1";
                     return ejecutarConsultaSimpleFila($sql);//envia la sentencia a la funcion ejecutarConsulta que está en conexion.php
             }
-    
-    	
-	
+
+            // Borra los registros ya cargados de peajes en un rango de fechas (formato 'YYYY-MM-DD'),
+            // para poder recargar el mes sin duplicar registros. Mismo patrón que
+            // borrarMovimientosPorRango() para movimientos_contables.
+            public function borrarPeajesPorRango($fechaDesde, $fechaHasta)
+            {
+                $fechaDesde = limpiarCadena($fechaDesde);
+                $fechaHasta = limpiarCadena($fechaHasta);
+                $sql = "DELETE FROM peajes_raw WHERE fecha_recepcion BETWEEN '$fechaDesde' AND '$fechaHasta'";
+                return ejecutarConsulta($sql);
+            }
 }
 ?>

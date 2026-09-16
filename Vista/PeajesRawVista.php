@@ -2,7 +2,7 @@
 session_start();
 if(isset($_SESSION['IdUsuarios'])){
 $modulosAcceso=explode(",",$_SESSION['perfil']);
-if(in_array("M_43",$modulosAcceso)){ // CAMBIO: código de módulo nuevo (placeholder, ver nota abajo)
+if(in_array("M43",$modulosAcceso)){ // CAMBIO: código de módulo nuevo (placeholder, ver nota abajo)
 include('header.php');
 ?>
 
@@ -173,7 +173,7 @@ include('header.php');
 include('footer.php');
 ?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<script type="text/javascript" src="../Ajax/peajesRawAjax.js"></script> <!-- CAMBIO: nombre del archivo JS -->
+<script type="text/javascript" src="../Ajax/PeajesRawAjax.js"></script> <!-- CAMBIO: nombre del archivo JS -->
 
 <?php
 }else{
