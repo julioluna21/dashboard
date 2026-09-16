@@ -190,54 +190,64 @@ function Rcorrerarchivo(callback) {
     var obj = [];
 
     Papa.parse(archivo, {
-        header: false,
-        skipEmptyLines: true,
-        complete: async function (resultado) {
-            const datos = resultado.data;
+    header: false,
+    skipEmptyLines: true,
+    encoding: 'ISO-8859-1', // Se espcifica la codificacion del csv para evitar errores al encontrar el encabezado
+    complete: async function (resultado) {
+    const datos = resultado.data;
 
-            for (let i = 1; i < datos.length; i++) {
-                const fila = datos[i];
+    // El archivo real trae un bloque de título (nombre del reporte, usuario,
+    // rango de fechas) antes del encabezado real de columnas. Ese bloque no
+    // tiene un número fijo de filas "útiles" una vez que skipEmptyLines quita
+    // las filas en blanco -- por eso buscamos la fila que contiene el
+    // encabezado real ("FECHA RECEPCIÓN") en vez de saltar N filas fijas.
+    const indiceEncabezado = datos.findIndex(fila =>
+      fila.some(celda => String(celda ?? '').trim() === 'FECHA RECEPCIÓN')
+    );
 
-                const fecha_recepcion = normalizarFechaPeajes(fila[0]);
-                const fecha_emision = normalizarFechaPeajes(fila[1]);
-                const tipo_transaccion = String(fila[2] ?? '').trim();
-                const codigo_transaccion = String(fila[3] ?? '').trim();
-                const placa = String(fila[4] ?? '').trim();
-                const categoria = String(fila[5] ?? '').trim();
-                const peaje = String(fila[6] ?? '').trim();
-                const carril = String(fila[7] ?? '').trim();
-                const sentido = String(fila[8] ?? '').trim();
-                const valor_inicial = limpiarValorMonetario(fila[9]);
-                const valor_cobrado = limpiarValorMonetario(fila[10]);
-                const valor_final = limpiarValorMonetario(fila[11]);
-                const receptor_facturacion = String(fila[12] ?? '').trim();
-                const cufe_dian = String(fila[13] ?? '').trim();
+    if (indiceEncabezado === -1) {
+      alert('No se encontró el encabezado esperado ("FECHA RECEPCIÓN") en el archivo. Verifica el formato del CSV.');
+      return;
+    }
 
-                obj.push({
-                    fecha_recepcion: fecha_recepcion,
-                    fecha_emision: fecha_emision,
-                    tipo_transaccion: tipo_transaccion,
-                    codigo_transaccion: codigo_transaccion,
-                    placa: placa,
-                    categoria: categoria,
-                    peaje: peaje,
-                    carril: carril,
-                    sentido: sentido,
-                    valor_inicial: valor_inicial,
-                    valor_cobrado: valor_cobrado,
-                    valor_final: valor_final,
-                    receptor_facturacion: receptor_facturacion,
-                    cufe_dian: cufe_dian
-                });
-            }
+    for (let i = indiceEncabezado + 1; i < datos.length; i++) {
+      const fila = datos[i];
 
-            if (typeof callback === "function") {
-                callback(obj);
-            }
-        },
-        error: function (err) {
-            console.error("Error al procesar CSV:", err);
-        }
-    });
+      const fecha_recepcion = normalizarFechaPeajes(fila[0]);
+      const fecha_emision = normalizarFechaPeajes(fila[1]);
+      const tipo_transaccion = String(fila[2] ?? '').trim();
+      const codigo_transaccion = String(fila[3] ?? '').trim();
+      const placa = String(fila[4] ?? '').trim();
+      const categoria = String(fila[5] ?? '').trim();
+      const peaje = String(fila[6] ?? '').trim();
+      const carril = String(fila[7] ?? '').trim();
+      const sentido = String(fila[8] ?? '').trim();
+      const valor_inicial = limpiarValorMonetario(fila[9]);
+      const valor_cobrado = limpiarValorMonetario(fila[10]);
+      const valor_final = limpiarValorMonetario(fila[11]);
+      const receptor_facturacion = String(fila[12] ?? '').trim();
+      const cufe_dian = String(fila[13] ?? '').trim();
+
+      // Si una fila quedó completamente vacía en las columnas clave (placa +
+      // código de transacción), la saltamos -- puede ser una fila de "pie de
+      // página" o totales al final del archivo, no una transacción real.
+      if (!placa && !codigo_transaccion) continue;
+
+      obj.push({
+        fecha_recepcion, fecha_emision, tipo_transaccion, codigo_transaccion,
+        placa, categoria, peaje, carril, sentido,
+        valor_inicial, valor_cobrado, valor_final,
+        receptor_facturacion, cufe_dian
+      });
+    }
+
+    if (typeof callback === "function") {
+      callback(obj);
+    }
+  },
+  error: function (err) {
+    console.error("Error al procesar CSV:", err);
+  }
+});
 }
 inicio();
