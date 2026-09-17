@@ -17,10 +17,25 @@ function insertarPeajesPorLotes($conexion, $filas, $tamLote = 500)
     $insertados = 0;
     $errores    = 0;
 
+    
+
     foreach (array_chunk($filas, $tamLote) as $lote) {
         $filasSql = [];
 
+    
         foreach ($lote as $fila) {
+
+            $fechaRecepcion = $fila['fecha_recepcion'] ?? '';
+
+            // Una fecha vacía no es un valor válido para una columna DATETIME en modo
+            // estricto de MySQL. Si no hay fecha de recepción, lo más seguro es que
+            // sea una fila de pie de página que no cayó en el filtro del JS (placa +
+            // código de transacción vacíos) -- se omite y se cuenta como error, en
+            // vez de insertar un NULL silencioso que "invente" que la fila no tenía fecha.
+            if ($fechaRecepcion === '') {
+                $errores++;
+                continue;
+            }
             $valores = [
                 limpiarCadena($fila['fecha_recepcion'] ?? ''),
                 limpiarCadena($fila['fecha_emision'] ?? ''),
@@ -42,13 +57,18 @@ function insertarPeajesPorLotes($conexion, $filas, $tamLote = 500)
         }
 
         $sql = "INSERT INTO peajes_raw ($columnas) VALUES " . implode(',', $filasSql);
-        $resultado = mysqli_query($conexion, $sql);
 
-        if ($resultado) {
-            $insertados += count($lote);
-        } else {
+        try {
+            $resultado = mysqli_query($conexion, $sql);
+            if ($resultado) {
+                $insertados += count($lote);
+            } else {
+                $errores += count($lote);
+                error_log("insertarPeajesPorLotes: falló lote de " . count($lote) . " filas: " . mysqli_error($conexion));
+            }
+        } catch (mysqli_sql_exception $e) {
             $errores += count($lote);
-            error_log("insertarPeajesPorLotes: falló lote de " . count($lote) . " filas: " . mysqli_error($conexion));
+            error_log("insertarPeajesPorLotes: excepción en lote de " . count($lote) . " filas: " . $e->getMessage());
         }
     }
 
@@ -92,36 +112,43 @@ switch ($_REQUEST['op'] ?? '') {
         break;
 
     case 'cargarCSV':
-        $desde     = isset($_POST['desde']) ? limpiarCadena($_POST['desde']) : '';
-        $hasta     = isset($_POST['hasta']) ? limpiarCadena($_POST['hasta']) : '';
-        $registros = isset($_POST['registros']) ? json_decode($_POST['registros'], true) : null;
+    $desde     = isset($_POST['desde']) ? limpiarCadena($_POST['desde']) : '';
+    $hasta     = isset($_POST['hasta']) ? limpiarCadena($_POST['hasta']) : '';
+    $registros = isset($_POST['registros']) ? json_decode($_POST['registros'], true) : null;
 
-        if (!$desde || !$hasta) {
-            http_response_code(400);
-            echo json_encode(["error" => "Debe indicar fecha desde y fecha hasta"]);
-            exit;
-        }
+    if (!$desde || !$hasta) {
+        http_response_code(400);
+        echo json_encode(["error" => "Debe indicar fecha desde y fecha hasta"]);
+        exit;
+    }
 
-        if (!is_array($registros)) {
-            http_response_code(400);
-            echo json_encode(["error" => "No se recibieron registros válidos"]);
-            exit;
-        }
+    if (!is_array($registros)) {
+        http_response_code(400);
+        echo json_encode(["error" => "No se recibieron registros válidos"]);
+        exit;
+    }
 
+    // Con la carga por lotes desde el cliente, cada request es un pedazo del
+    // archivo -- solo el primero debe borrar el rango existente. Si cada lote
+    // borrara, se perdería lo insertado por los lotes anteriores del mismo archivo.
+    $borrarRango = filter_var($_POST['borrar'] ?? '1', FILTER_VALIDATE_BOOLEAN);
+
+    if ($borrarRango) {
         $Consulta->borrarPeajesPorRango($desde, $hasta);
+    }
 
-        $resultado  = insertarPeajesPorLotes($conexion, $registros);
-        $insertados = $resultado['insertados'];
-        $errores    = $resultado['errores'];
+    $resultado  = insertarPeajesPorLotes($conexion, $registros);
+    $insertados = $resultado['insertados'];
+    $errores    = $resultado['errores'];
 
-        echo json_encode([
-            "total"      => count($registros),
-            "insertados" => $insertados,
-            "omitidos"   => $errores,
-            "mensaje"    => "Proceso finalizado: {$insertados} registros insertados, {$errores} omitidos (error).",
-        ]);
+    echo json_encode([
+        "total"      => count($registros),
+        "insertados" => $insertados,
+        "omitidos"   => $errores,
+        "mensaje"    => "Proceso finalizado: {$insertados} registros insertados, {$errores} omitidos (error).",
+    ]);
 
-        break;
+    break;
 
     case 'mostrar':
 

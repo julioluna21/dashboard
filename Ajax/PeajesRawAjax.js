@@ -68,51 +68,82 @@ function abrirModalCargaPeajes() {
 }
 
 function guardarCargaPeajes() {
-    const mes = $('#mesCargaPeajes').val();
+  const mes = $('#mesCargaPeajes').val();
 
-    if (!mes) {
-        alert('Selecciona el mes a cargar.');
-        return;
+  if (!mes) {
+    alert('Selecciona el mes a cargar.');
+    return;
+  }
+  if (!input.files || !input.files[0]) {
+    alert('Selecciona un archivo CSV.');
+    return;
+  }
+
+  const [anio, mesNumero] = mes.split('-').map(Number);
+  const desde = mes + '-01';
+  const ultimoDia = new Date(anio, mesNumero, 0).getDate();
+  const hasta = mes + '-' + String(ultimoDia).padStart(2, '0');
+
+  if (!confirm('¿Desea cargar este archivo? Se borrarán los registros existentes de ' + mes + ' y se cargarán los nuevos.')) {
+    return;
+  }
+
+  $('#btnGuardarPeajes').prop('disabled', true).text('Cargando...');
+  $('#cargandoGuardarPeajes').show();
+
+  Rcorrerarchivo(function (filas) {
+    // Igual que en movimientos: se parte el arreglo ya procesado en lotes fijos
+    // ANTES de mandarlo, para no superar el límite de tamaño de request del
+    // servidor con archivos grandes, y para dar feedback de progreso real.
+    const TAM_LOTE = 400;
+    const lotes = [];
+    for (let i = 0; i < filas.length; i += TAM_LOTE) {
+      lotes.push(filas.slice(i, i + TAM_LOTE));
     }
-    if (!input.files || !input.files[0]) {
-        alert('Selecciona un archivo CSV.');
+
+    let totalInsertados = 0;
+    let totalOmitidos = 0;
+
+    function enviarLote(indice) {
+      if (indice >= lotes.length) {
+        alert('Proceso finalizado: ' + totalInsertados + ' registros insertados, ' + totalOmitidos + ' omitidos.');
+        $('#modalCargarPeajes').modal('hide');
+        tabla.ajax.reload();
+        $('#btnGuardarPeajes').prop('disabled', false).text('Guardar');
+        $('#cargandoGuardarPeajes').hide();
+        $('#mesCargaPeajes').val('');
+        limpiarArchivo();
         return;
+      }
+
+      $('#cargandoGuardarPeajes').html(
+        '<i class="fa fa-spinner fa-spin"></i> Cargando lote ' + (indice + 1) + ' de ' + lotes.length + '...'
+      );
+
+      $.ajax({
+        url: '../Control/PeajesRawControl.php',
+        method: 'POST',
+        dataType: 'json',
+        data: {
+          op: 'cargarCSV',
+          desde: desde,
+          hasta: hasta,
+          borrar: indice === 0 ? '1' : '0', // solo el primer lote [0] borra el rango existente, para evitar que el segundo lote [1] borre lo que cargo el lote anterior.
+          registros: JSON.stringify(lotes[indice])
+        }
+      }).done(function (respuesta) {
+        totalInsertados += Number(respuesta.insertados || 0);
+        totalOmitidos += Number(respuesta.omitidos || 0);
+        enviarLote(indice + 1);
+      }).fail(function () {
+        alert('Ocurrió un error al cargar el lote ' + (indice + 1) + ' de ' + lotes.length + '. Insertados hasta el momento: ' + totalInsertados + '.');
+        $('#btnGuardarPeajes').prop('disabled', false).text('Guardar');
+        $('#cargandoGuardarPeajes').hide();
+      });
     }
 
-    const [anio, mesNumero] = mes.split('-').map(Number);
-    const desde = mes + '-01';
-    const ultimoDia = new Date(anio, mesNumero, 0).getDate();
-    const hasta = mes + '-' + String(ultimoDia).padStart(2, '0');
-
-    if (!confirm('¿Desea cargar este archivo? Se borrarán los registros existentes de ' + mes + ' y se cargarán los nuevos.')) {
-        return;
-    }
-
-    $('#btnGuardarPeajes').prop('disabled', true).text('Cargando...');
-    $('#cargandoGuardarPeajes').show();
-
-    Rcorrerarchivo(function (filas) {
-        console.log(filas);
-        $.ajax({
-            url: '../Control/PeajesRawControl.php',
-            method: 'POST',
-            data: {
-                op: 'cargarCSV',
-                desde: desde,
-                hasta: hasta,
-                registros: JSON.stringify(filas)
-            }
-        }).done(function (respuesta) {
-            alert(respuesta.mensaje || 'Proceso finalizado.');
-            $('#modalCargarPeajes').modal('hide');
-            tabla.ajax.reload();
-        }).fail(function () {
-            alert('Ocurrió un error al cargar el archivo.');
-        }).always(function () {
-            $('#btnGuardarPeajes').prop('disabled', false).text('Guardar');
-            $('#cargandoGuardarPeajes').hide();
-        });
-    });
+    enviarLote(0);
+  });
 }
 
 // El CSV de peajes trae la fecha como texto "DD/MM/AA HH:MM:SS" (año de 2 dígitos),
@@ -180,74 +211,78 @@ function listar(estado) {
     }).DataTable();
 }
 
-function Rcorrerarchivo(callback) {
-    if (!input) return;
-    var archivo = input.files && input.files[0];
-    if (!archivo) {
-        alert('Seleccioná un archivo CSV.');
-        return;
-    }
-    var obj = [];
+async function detectarEncoding(archivo) {
+  const buffer = await archivo.slice(0, 4096).arrayBuffer();
+  try {
+    new TextDecoder('utf-8', { fatal: true }).decode(buffer);
+    return 'UTF-8';
+  } catch (e) {
+    return 'ISO-8859-1';
+  }
+}
 
-    Papa.parse(archivo, {
+async function Rcorrerarchivo(callback) {
+  if (!input) return;
+  var archivo = input.files && input.files[0];
+  if (!archivo) {
+    alert('Seleccioná un archivo CSV.');
+    return;
+  }
+
+  const encoding = await detectarEncoding(archivo);
+  console.log('Encoding detectado:', encoding);
+  var obj = [];
+
+  Papa.parse(archivo, {
     header: false,
     skipEmptyLines: true,
-    encoding: 'ISO-8859-1', // Se espcifica la codificacion del csv para evitar errores al encontrar el encabezado
+    encoding: encoding,
     complete: async function (resultado) {
-    const datos = resultado.data;
+      const datos = resultado.data;
 
-    // El archivo real trae un bloque de título (nombre del reporte, usuario,
-    // rango de fechas) antes del encabezado real de columnas. Ese bloque no
-    // tiene un número fijo de filas "útiles" una vez que skipEmptyLines quita
-    // las filas en blanco -- por eso buscamos la fila que contiene el
-    // encabezado real ("FECHA RECEPCIÓN") en vez de saltar N filas fijas.
-    const indiceEncabezado = datos.findIndex(fila =>
-      fila.some(celda => String(celda ?? '').trim() === 'FECHA RECEPCIÓN')
-    );
+      const indiceEncabezado = datos.findIndex(fila =>
+        fila.some(celda => String(celda ?? '').trim() === 'FECHA RECEPCIÓN')
+      );
 
-    if (indiceEncabezado === -1) {
-      alert('No se encontró el encabezado esperado ("FECHA RECEPCIÓN") en el archivo. Verifica el formato del CSV.');
-      return;
+      if (indiceEncabezado === -1) {
+        alert('No se encontró el encabezado esperado ("FECHA RECEPCIÓN") en el archivo. Verifica el formato del CSV.');
+        return;
+      }
+
+      for (let i = indiceEncabezado + 1; i < datos.length; i++) {
+        const fila = datos[i];
+
+        const fecha_recepcion = normalizarFechaPeajes(fila[0]);
+        const fecha_emision = normalizarFechaPeajes(fila[1]);
+        const tipo_transaccion = String(fila[2] ?? '').trim();
+        const codigo_transaccion = String(fila[3] ?? '').trim();
+        const placa = String(fila[4] ?? '').trim();
+        const categoria = String(fila[5] ?? '').trim();
+        const peaje = String(fila[6] ?? '').trim();
+        const carril = String(fila[7] ?? '').trim();
+        const sentido = String(fila[8] ?? '').trim();
+        const valor_inicial = limpiarValorMonetario(fila[9]);
+        const valor_cobrado = limpiarValorMonetario(fila[10]);
+        const valor_final = limpiarValorMonetario(fila[11]);
+        const receptor_facturacion = String(fila[12] ?? '').trim();
+        const cufe_dian = String(fila[13] ?? '').trim();
+
+        if (!placa && !codigo_transaccion) continue;
+
+        obj.push({
+          fecha_recepcion, fecha_emision, tipo_transaccion, codigo_transaccion,
+          placa, categoria, peaje, carril, sentido,
+          valor_inicial, valor_cobrado, valor_final,
+          receptor_facturacion, cufe_dian
+        });
+      }
+
+      if (typeof callback === "function") {
+        callback(obj);
+      }
+    },
+    error: function (err) {
+      console.error("Error al procesar CSV:", err);
     }
-
-    for (let i = indiceEncabezado + 1; i < datos.length; i++) {
-      const fila = datos[i];
-
-      const fecha_recepcion = normalizarFechaPeajes(fila[0]);
-      const fecha_emision = normalizarFechaPeajes(fila[1]);
-      const tipo_transaccion = String(fila[2] ?? '').trim();
-      const codigo_transaccion = String(fila[3] ?? '').trim();
-      const placa = String(fila[4] ?? '').trim();
-      const categoria = String(fila[5] ?? '').trim();
-      const peaje = String(fila[6] ?? '').trim();
-      const carril = String(fila[7] ?? '').trim();
-      const sentido = String(fila[8] ?? '').trim();
-      const valor_inicial = limpiarValorMonetario(fila[9]);
-      const valor_cobrado = limpiarValorMonetario(fila[10]);
-      const valor_final = limpiarValorMonetario(fila[11]);
-      const receptor_facturacion = String(fila[12] ?? '').trim();
-      const cufe_dian = String(fila[13] ?? '').trim();
-
-      // Si una fila quedó completamente vacía en las columnas clave (placa +
-      // código de transacción), la saltamos -- puede ser una fila de "pie de
-      // página" o totales al final del archivo, no una transacción real.
-      if (!placa && !codigo_transaccion) continue;
-
-      obj.push({
-        fecha_recepcion, fecha_emision, tipo_transaccion, codigo_transaccion,
-        placa, categoria, peaje, carril, sentido,
-        valor_inicial, valor_cobrado, valor_final,
-        receptor_facturacion, cufe_dian
-      });
-    }
-
-    if (typeof callback === "function") {
-      callback(obj);
-    }
-  },
-  error: function (err) {
-    console.error("Error al procesar CSV:", err);
-  }
-});
-}
+  });}
 inicio();
