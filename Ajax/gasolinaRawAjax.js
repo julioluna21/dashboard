@@ -94,29 +94,59 @@ function guardarCargaGasolina() {
   $('#btnGuardarGasolina').prop('disabled', true).text('Cargando...');
   $('#cargandoGuardarGasolina').show();
 
-  Rcorrerarchivo(function (filas)
-  {
-    console.log(filas);
-    $.ajax({
-      url: '../Control/GasolinaRawControl.php',
-      method: 'POST',
-      data: {
-        op: 'cargarCSV',
-        desde: desde,
-        hasta: hasta,
-        registros: JSON.stringify(filas)
+  Rcorrerarchivo(function (filas) {
+    // Igual que en peajes: se parte el arreglo ya procesado en lotes fijos
+    // ANTES de mandarlo, para no superar el límite de tamaño de request del
+    // servidor con archivos grandes, y para dar feedback de progreso real.
+    const TAM_LOTE = 400;
+    const lotes = [];
+    for (let i = 0; i < filas.length; i += TAM_LOTE) {
+      lotes.push(filas.slice(i, i + TAM_LOTE));
+    }
+
+    let totalInsertados = 0;
+    let totalOmitidos = 0;
+
+    function enviarLote(indice) {
+      if (indice >= lotes.length) {
+        alert('Proceso finalizado: ' + totalInsertados + ' registros insertados, ' + totalOmitidos + ' omitidos.');
+        $('#modalCargarGasolina').modal('hide');
+        tabla.ajax.reload();
+        $('#btnGuardarGasolina').prop('disabled', false).text('Guardar');
+        $('#cargandoGuardarGasolina').hide();
+        $('#mesCargaGasolina').val('');
+        limpiarArchivo();
+        return;
       }
-    }).done(function (respuesta) {
-      alert(respuesta.mensaje || 'Proceso finalizado.');
-      $('#modalCargarGasolina').modal('hide');
-      tabla.ajax.reload();
-    }).fail(function () {
-      alert('Ocurrió un error al cargar el archivo.');
-    }).always(function () {
-      $('#btnGuardarGasolina').prop('disabled', false).text('Guardar');
-      $('#cargandoGuardarGasolina').hide();
-    });
-});
+
+      $('#cargandoGuardarGasolina').html(
+        '<i class="fa fa-spinner fa-spin"></i> Cargando lote ' + (indice + 1) + ' de ' + lotes.length + '...'
+      );
+
+      $.ajax({
+        url: '../Control/GasolinaRawControl.php',
+        method: 'POST',
+        dataType: 'json',
+        data: {
+          op: 'cargarCSV',
+          desde: desde,
+          hasta: hasta,
+          borrar: indice === 0 ? '1' : '0', // solo el primer lote [0] borra el rango existente, para evitar que el segundo lote [1] borre lo que cargo el lote anterior.
+          registros: JSON.stringify(lotes[indice])
+        }
+      }).done(function (respuesta) {
+        totalInsertados += Number(respuesta.insertados || 0);
+        totalOmitidos += Number(respuesta.omitidos || 0);
+        enviarLote(indice + 1);
+      }).fail(function () {
+        alert('Ocurrió un error al cargar el lote ' + (indice + 1) + ' de ' + lotes.length + '. Insertados hasta el momento: ' + totalInsertados + '.');
+        $('#btnGuardarGasolina').prop('disabled', false).text('Guardar');
+        $('#cargandoGuardarGasolina').hide();
+      });
+    }
+
+    enviarLote(0);
+  });
 }
 
 // Excel guarda una fecha como un número: cantidad de días desde el 30/12/1899

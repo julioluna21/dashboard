@@ -815,5 +815,16 @@ public function detallecontrato($id)
                 $sql = "DELETE FROM peajes_raw WHERE fecha_recepcion BETWEEN '$fechaDesde' AND '$fechaHasta'";
                 return ejecutarConsulta($sql);
             }
+
+            // Borra los registros ya cargados de gasolina en un rango de fechas (formato 'YYYY-MM-DD'),
+            // para poder recargar el mes sin duplicar registros. Mismo patrón que
+            // borrarPeajesPorRango() / borrarMovimientosPorRango().
+            public function borrarGasolinaRawPorRango($fechaDesde, $fechaHasta)
+            {
+                $fechaDesde = limpiarCadena($fechaDesde);
+                $fechaHasta = limpiarCadena($fechaHasta);
+                $sql = "DELETE FROM gasolina_raw WHERE fecha BETWEEN '$fechaDesde' AND '$fechaHasta'";
+                return ejecutarConsulta($sql);
+            }
 }
 ?>

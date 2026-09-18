@@ -22,6 +22,17 @@ function insertarGasolinaPorLotes($conexion, $filas, $tamLote = 500)
         $filasSql = [];
 
         foreach ($lote as $fila) {
+
+            $fecha = $fila['fecha'] ?? '';
+
+            // Una fecha vacía no es un valor válido para una columna DATETIME en modo
+            // estricto de MySQL -- se omite y se cuenta como error, en vez de dejar que
+            // el INSERT completo del lote falle. Mismo criterio que insertarPeajesPorLotes().
+            if ($fecha === '') {
+                $errores++;
+                continue;
+            }
+
             $valores = [
                 limpiarCadena($fila['cliente'] ?? ''),
                 limpiarCadena($fila['proveedor'] ?? ''),
@@ -46,13 +57,18 @@ function insertarGasolinaPorLotes($conexion, $filas, $tamLote = 500)
         }
 
         $sql = "INSERT INTO gasolina_raw ($columnas) VALUES " . implode(',', $filasSql);
-        $resultado = mysqli_query($conexion, $sql);
 
-        if ($resultado) {
-            $insertados += count($lote);
-        } else {
+        try {
+            $resultado = mysqli_query($conexion, $sql);
+            if ($resultado) {
+                $insertados += count($lote);
+            } else {
+                $errores += count($lote);
+                error_log("insertarGasolinaPorLotes: falló lote de " . count($lote) . " filas: " . mysqli_error($conexion));
+            }
+        } catch (mysqli_sql_exception $e) {
             $errores += count($lote);
-            error_log("insertarGasolinaPorLotes: falló lote de " . count($lote) . " filas: " . mysqli_error($conexion));
+            error_log("insertarGasolinaPorLotes: excepción en lote de " . count($lote) . " filas: " . $e->getMessage());
         }
     }
 
@@ -116,8 +132,14 @@ switch ($_REQUEST['op'] ?? '') {
             exit;
         }
 
-        // Borra lo ya cargado en ese rango antes de insertar lo nuevo
-        $Consulta->borrarGasolinaRawPorRango($desde, $hasta);
+        // Con la carga por lotes desde el cliente, cada request es un pedazo del
+        // archivo -- solo el primero debe borrar el rango existente. Si cada lote
+        // borrara, se perdería lo insertado por los lotes anteriores del mismo archivo.
+        $borrarRango = filter_var($_POST['borrar'] ?? '1', FILTER_VALIDATE_BOOLEAN);
+
+        if ($borrarRango) {
+            $Consulta->borrarGasolinaRawPorRango($desde, $hasta);
+        }
 
         $resultado  = insertarGasolinaPorLotes($conexion, $registros);
         $insertados = $resultado['insertados'];
