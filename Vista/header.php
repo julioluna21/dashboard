@@ -129,7 +129,7 @@
         <?php if(in_array("M42",$modulosAcceso)){ ?>
            <li> <a href="GasolinaRawVista.php" >Gasolina<i class="fa fa-tint" aria-hidden="true" ></i></a> </li><?php }?>
         <?php if(in_array("M43",$modulosAcceso)){ ?>
-           <li> <a href="PeajesRawVista.php" >Peajes<i class="fa fa-road" aria-hidden="true" ></i></a> </li><?php }?>
+           <li> <a href="PeajesRawVista.php" >Peajes Flota<i class="fa fa-road" aria-hidden="true" ></i></a> </li><?php }?>
 
         <?php if(in_array("M3",$modulosAcceso) or in_array("M4",$modulosAcceso) or in_array("M5",$modulosAcceso) or in_array("M6",$modulosAcceso) or in_array("M32",$modulosAcceso)){ ?><li>
         <a href="#" class="toggle-submenu"> Configuración <i class="fa fa-cog"></i></a>
