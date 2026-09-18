@@ -215,6 +215,8 @@ include('header.php');
                      <label>Gasolina:</label>
                     <SPAN title="Gasolina" style="float:right">
                     <input type="checkbox" class="" name="permiso[]" id="M42" value="M42"  /></SPAN><br>	    
+                    <SPAN title="Peajes Flota" style="float:right">
+                    <input type="checkbox" class="" name="permiso[]" id="M43" value="M43"  /></SPAN><br>	    
                         	
                             </div> 	  
 								
