@@ -214,11 +214,15 @@ include('header.php');
                     <input type="checkbox" class="" name="permiso[]" id="M41" value="M41"  /></SPAN><br>	    
                      <label>Gasolina:</label>
                     <SPAN title="Gasolina" style="float:right">
-                    <input type="checkbox" class="" name="permiso[]" id="M42" value="M42"  /></SPAN><br>	    
+                    <input type="checkbox" class="" name="permiso[]" id="M42" value="M42"  /></SPAN><br>	   
+                     <label>Peajes Flota:</label> 
                     <SPAN title="Peajes Flota" style="float:right">
-                    <input type="checkbox" class="" name="permiso[]" id="M43" value="M43"  /></SPAN><br>	    
-                        	
-                            </div> 	  
+                    <input type="checkbox" class="" name="permiso[]" id="M43" value="M43"  /></SPAN><br>
+                     <label>Inventario Software:</label>
+                    <SPAN title="Inventario Software" style="float:right">
+                    <input type="checkbox" class="" name="permiso[]" id="M44" value="M44"  /></SPAN><br>
+
+                            </div>
 								
 						
                             </div>

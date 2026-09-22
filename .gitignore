@@ -1,2 +1,3 @@
 .env
 db/dumps/
+.CLAUDE.local.md
