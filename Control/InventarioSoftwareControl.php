@@ -43,23 +43,35 @@ switch ($_GET["op"])
                     $rspta=$InventarioSoftware->listar($_GET["estado"]);
                     $data= Array();
 
-                    while ($reg=$rspta->fetch_object())
-                    {
-                        $bot='<SPAN title="Editar">
-                                            <button class="btn btn-light" onclick="mostrar('.$reg->ID_INVENTARIO_SOFTWARE.')">
-                                                    <i class="fa fa-eye" style="title="anular">
-                    <button type="button" class="btn btn-light" onclick="anular('.$reg->ID_INVENTARIO_SOFTWARE.')">
-                    <i class="fa fa-trash" style=""></i></button></SPAN>';
+                    while ($reg = $rspta->fetch_object())
+                                {
+                                $estado = "Activo";
 
-                        $estado="Activo";
-                        if($reg->ESTADO==0){
-                        $estado="Inactivo";
-                        $bot='<SPAN title="Editar">
-                                            <button class="btn btn-light" onclick="mostrar('.$reg->ID_INVENTARIO_SOFTWARE.')">
-                                                    <i class="fa fa-eye" style="title="Activar">
-                     <button type="button" class="btn btn-light" onclick="activar('.$reg->ID_INVENTARIO_SOFTWARE.')">
-                     <i class="fa fa-check" style=""></i></button></SPAN>';
-                        }
+                                $bot = '
+                                        <button type="button" class="btn btn-light" title="Editar" onclick="mostrar('.$reg->ID_INVENTARIO_SOFTWARE.')">
+                                        <i class="fa fa-eye"></i>
+                                        </button>
+
+                                        <button type="button" class="btn btn-light" title="Anular" onclick="anular('.$reg->ID_INVENTARIO_SOFTWARE.')">
+                                        <i class="fa fa-trash"></i>
+                                        </button>
+                                ';
+
+                                if ($reg->ESTADO == 0)
+                                {
+                                        $estado = "Inactivo";
+
+                                        $bot = '
+                                        <button type="button" class="btn btn-light" title="Editar" onclick="mostrar('.$reg->ID_INVENTARIO_SOFTWARE.')">
+                                                <i class="fa fa-eye"></i>
+                                        </button>
+
+                                        <button type="button" class="btn btn-light" title="Activar" onclick="activar('.$reg->ID_INVENTARIO_SOFTWARE.')">
+                                                <i class="fa fa-check"></i>
+                                        </button>
+                                        ';
+                                }
+                                
 
                         $link_html = $reg->LINK_CARPETA ? '<a href="'.$reg->LINK_CARPETA.'" target="_blank">Ver carpeta</a>' : '';
 
