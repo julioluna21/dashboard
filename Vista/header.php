@@ -126,14 +126,22 @@
            <li> <a href="MapaUbicaciones.php" >Mapa Tolis<i class="fa fa-map-marker" aria-hidden="true" ></i></a> </li><?php }?>
         <?php if(in_array("M41",$modulosAcceso)){ ?>
            <li> <a href="MovimientosContablesVista.php" >Movimientos Contables<i class="fa fa-book" aria-hidden="true" ></i></a> </li><?php }?>
-        <?php if(in_array("M42",$modulosAcceso)){ ?>
-           <li> <a href="GasolinaRawVista.php" >Gasolina<i class="fa fa-tint" aria-hidden="true" ></i></a> </li><?php }?>
-        <?php if(in_array("M43",$modulosAcceso)){ ?>
-           <li> <a href="PeajesRawVista.php" >Peajes Flota<i class="fa fa-road" aria-hidden="true" ></i></a> </li><?php }?>
-        <?php if(in_array("M44",$modulosAcceso)){ ?>
-           <li> <a href="InventarioSoftwareVista.php" >Inventario Software<i class="fa fa-code" aria-hidden="true" ></i></a> </li><?php }?>
 
-        <?php if(in_array("M3",$modulosAcceso) or in_array("M4",$modulosAcceso) or in_array("M5",$modulosAcceso) or in_array("M6",$modulosAcceso) or in_array("M32",$modulosAcceso)){ ?><li>
+           <!-- Modulo de Flota -->
+        <?php if(in_array("M42",$modulosAcceso) or in_array("M43",$modulosAcceso)){ ?>
+        <li>
+        <a href="#" class="toggle-submenu"> Flota <i class="fa fa-folder-open"></i></a>
+        <ul class="submenu">
+		  <?php if(in_array("M42",$modulosAcceso)){ ?>		
+          <li><a href="GasolinaRawVista.php">Combustible</a></li><?php }?>	
+		   <?php if(in_array("M43",$modulosAcceso)){ ?>		
+          <li><a href="PeajesRawVista.php">Peajes</a></li><?php }?>
+	    </ul>
+        </li>
+        <?php }?>
+
+        <?php if(in_array("M3",$modulosAcceso) or in_array("M4",$modulosAcceso) or in_array("M5",$modulosAcceso) or in_array("M6",$modulosAcceso) or in_array("M32",$modulosAcceso)){ ?>
+        <li>
         <a href="#" class="toggle-submenu"> Configuración <i class="fa fa-cog"></i></a>
         <ul class="submenu">
 		  <?php if(in_array("M3",$modulosAcceso)){ ?>		
@@ -148,9 +156,9 @@
 		  <li><a href="ProveedorVista.php">Proveedores</a></li><?php }?>	
            <?php if(in_array("M32",$modulosAcceso)){ ?>		
 		  <li><a href="TipoeventoAsistencial.php">Tipo Evento Asistencial</a></li><?php }?>	
-			
-        </ul>
-      </li><?php }?>
+	    </ul>
+        </li>
+      <?php }?>
 					
 		<?php if(in_array("M7",$modulosAcceso) or in_array("M8",$modulosAcceso) or in_array("M9",$modulosAcceso) or in_array("M10",$modulosAcceso) or in_array("M11",$modulosAcceso) or in_array("M13",$modulosAcceso)){ ?><li>
         <a href="#" class="toggle-submenu"> Configuración Contrato<i class="fa fa-cog"></i></a>
@@ -205,7 +213,7 @@
 		 </ul>
       </li><?php }?>		
 					
-	   <?php if(in_array("M29",$modulosAcceso) or in_array("M30",$modulosAcceso) or in_array("M37",$modulosAcceso) or in_array("MI1",$modulosAcceso) or in_array("M40",$modulosAcceso)){ ?><li>
+	   <?php if(in_array("M29",$modulosAcceso) or in_array("M30",$modulosAcceso) or in_array("M37",$modulosAcceso) or in_array("MI1",$modulosAcceso) or in_array("M40",$modulosAcceso) or in_array("M44",$modulosAcceso)){ ?><li>
         <a href="#" class="toggle-submenu"> Gestión TI<i class="fa fa-cog"></i></a>
         <ul class="submenu">
 		   <?php if(in_array("MI1",$modulosAcceso)){ ?>	
@@ -218,7 +226,8 @@
 		   <li><a href="EjecucionPresupuesto.php">Gestión Gasto</a></li><?php }?>
            <?php if(in_array("M40",$modulosAcceso)){ ?>	
 		   <li><a href="ReporteAsistencial.php">Reporte Asistencial</a></li><?php }?>
-			
+			<?php if(in_array("M44",$modulosAcceso)){ ?>	
+		   <li><a href="InventarioSoftwareVista.php">Inventario Software</a></li><?php }?>
         </ul>
       </li><?php }?>				
 		

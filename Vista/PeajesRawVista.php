@@ -141,21 +141,21 @@ include('header.php');
           <table id="tbllistado" class="table table-striped table-bordered table-hover" style="width:100%">
             <thead>
               <tr id="thead-ordenes">
-                <th style="min-width:150px;">fecha_recepcion</th>
-                <th style="min-width:150px;">fecha_emision</th>
-                <th style="min-width:150px;">tipo_transaccion</th>
-                <th style="min-width:200px;">codigo_transaccion</th>
-                <th style="min-width:100px;">placa</th>
-                <th style="min-width:80px;">categoria</th>
-                <th style="min-width:150px;">peaje</th>
-                <th style="min-width:100px;">carril</th>
-                <th style="min-width:100px;">sentido</th>
-                <th style="min-width:150px;">valor_inicial</th>
-                <th style="min-width:150px;">valor_cobrado</th>
-                <th style="min-width:150px;">valor_final</th>
-                <th style="min-width:150px;">receptor_facturacion</th>
-                <th style="min-width:250px;">cufe_dian</th>
-                <th style="min-width:200px;">fecha_carga</th>
+                <th style="min-width:150px;">Fecha Recepcion</th>
+                <th style="min-width:150px;">Fecha Emision</th>
+                <th style="min-width:150px;">Tipo Transaccion</th>
+                <th style="min-width:200px;">Codigo Transaccion</th>
+                <th style="min-width:100px;">Placa</th>
+                <th style="min-width:80px;">Categoria</th>
+                <th style="min-width:150px;">Peaje</th>
+                <th style="min-width:100px;">Carril</th>
+                <th style="min-width:100px;">Sentido</th>
+                <th style="min-width:150px;">Valor Inicial</th>
+                <th style="min-width:150px;">Valor Cobrado</th>
+                <th style="min-width:150px;">Valor Final</th>
+                <th style="min-width:150px;">Receptor Facturacion</th>
+                <th style="min-width:250px;">Cufe Dian</th>
+                <th style="min-width:200px;">Fecha Carga</th>
               </tr>
             </thead>
             <tbody id="tbody-ordenes">
