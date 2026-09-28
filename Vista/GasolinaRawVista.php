@@ -86,7 +86,7 @@ include('header.php');
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">CARGAR REGISTROS DE GASOLINA</h5>
+            <h5 class="modal-title">CARGAR REGISTROS DE COMBUSTIBLE</h5>
             <button type="button" class="close" data-dismiss="modal">&times;</button>
           </div>
           <div class="modal-body">
@@ -132,7 +132,7 @@ include('header.php');
         </SPAN>
 
         <div class="x_title  ">
-          <h1>Gasolina <small>Registro</small></h1>
+          <h1>Combustible <small>Registro</small></h1>
           <div class="clearfix"></div>
         </div><br><br>
 
@@ -140,24 +140,24 @@ include('header.php');
           <table id="tbllistado" class="table table-striped table-bordered table-hover" style="width:100%">
             <thead>
               <tr id="thead-ordenes">
-                <th style="min-width:150px;">cliente</th>
-                <th style="min-width:150px;">proveedor</th>
-                <th style="min-width:100px;">nro_identificacion</th>
-                <th style="min-width:200px;">codigo_sap</th>
-                <th>no_venta</th>
-                <th style="min-width:150px;">fecha</th>
-                <th style="min-width:150px;">estacion</th>
-                <th style="min-width:100px;">regional</th>
-                <th style="min-width:200px;">id_eds</th>
-                <th style="min-width:200px;">placa</th>
-                <th style="min-width:200px;">conductor</th>
-                <th style="min-width:200px;">combustible</th>
-                <th style="min-width:200px;">cantidad</th>
-                <th style="min-width:200px;">precio</th>
-                <th style="min-width:300px;">unidad_venta</th>
-                <th style="min-width:200px;">total_venta</th>
-                <th style="min-width:200px;">kilometraje</th>
-                <th style="min-width:200px;">fecha_carga</th>            
+                <th style="min-width:150px;">Cliente</th>
+                <th style="min-width:150px;">Proveedor</th>
+                <th style="min-width:100px;">Nro Identificacion</th>
+                <th style="min-width:200px;">Codigo SAP</th>
+                <th>No Venta</th>
+                <th style="min-width:150px;">Fecha</th>
+                <th style="min-width:150px;">Estacion</th>
+                <th style="min-width:100px;">Regional</th>
+                <th style="min-width:200px;">Id Eds</th>
+                <th style="min-width:200px;">Placa</th>
+                <th style="min-width:200px;">Conductor</th>
+                <th style="min-width:200px;">Combustible</th>
+                <th style="min-width:200px;">Cantidad</th>
+                <th style="min-width:200px;">Precio</th>
+                <th style="min-width:300px;">Unidad Venta</th>
+                <th style="min-width:200px;">Total Venta</th>
+                <th style="min-width:200px;">Kilometraje</th>
+                <th style="min-width:200px;">Fecha Carga</th>            
               </tr>
             </thead>
             <tbody id="tbody-ordenes">
