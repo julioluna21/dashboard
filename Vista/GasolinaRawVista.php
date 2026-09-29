@@ -136,8 +136,13 @@ include('header.php');
           <div class="clearfix"></div>
         </div><br><br>
 
-        <div class="panel-body table-responsive" style="width:100%" id="listadoregistros">
-          <table id="tbllistado" class="table table-striped table-bordered table-hover" style="width:100%">
+        <div class="panel-body table-responsive"  id="listadoregistros">
+
+        <div id="invoice">
+
+   
+    <div class="invoice overflow-auto">
+          <table border="0" cellspacing="0" cellpadding="0" id="tbllistado" style="width:100%;">
             <thead>
               <tr id="thead-ordenes">
                 <th style="min-width:150px;">Cliente</th>
@@ -163,6 +168,8 @@ include('header.php');
             <tbody id="tbody-ordenes">
             </tbody>
           </table>
+        </div>
+        </div>
         </div>
 
       </div>

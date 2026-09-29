@@ -190,7 +190,7 @@ function guardar(e)
     var formData = new FormData($("#formregistros")[0]);
 	formData.append('DatosDetalle', JSON.stringify(obj));
 		
-	alert(JSON.stringify(obj));	
+	//alert(JSON.stringify(obj));	
     $.ajax({
             url: "../Control/PresupuestoControl.php?op=guardar",
         type: "POST",
