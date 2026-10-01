@@ -140,7 +140,6 @@ include('header.php');
 
         <div id="invoice">
 
-   
     <div class="invoice overflow-auto">
           <table border="0" cellspacing="0" cellpadding="0" id="tbllistado" style="width:100%;">
             <thead>
