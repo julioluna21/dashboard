@@ -6,6 +6,18 @@ require "../Modelo/ConsultasAnidadas.php";
 $ejecucion = new configuracion();
 $Consulta  = new consultas();
 
+// Los valores numéricos del CSV consolidado de Área de Flota vienen en formato es-CO
+// ("$11.900,00", "209.523,000", "10,067"). Sin limpiar, MariaDB en modo no estricto
+// trunca en el primer carácter inválido ($ -> 0, coma -> solo la parte entera).
+// Se quita $, espacios y punto de miles, y la coma decimal pasa a punto.
+function limpiarNumeroGasolina($valor)
+{
+    $valor = trim((string) $valor);
+    if ($valor === '') return '';
+    $valor = str_replace(['$', ' ', '.'], '', $valor);
+    return str_replace(',', '.', $valor);
+}
+
 // Inserta $filas en gasolina_raw en lotes de $tamLote filas por sentencia, en vez de un
 // INSERT por fila -- con cargas de miles de filas, un insert a la vez es lo más lento
 // del proceso. Mismo patrón que insertarMovimientosPorLotes() en MovimiesntosContablesControlTem.php.
@@ -46,11 +58,11 @@ function insertarGasolinaPorLotes($conexion, $filas, $tamLote = 500)
                 limpiarCadena($fila['placa'] ?? ''),
                 limpiarCadena($fila['conductor'] ?? ''),
                 limpiarCadena($fila['combustible'] ?? ''),
-                limpiarCadena($fila['cantidad'] ?? ''),
-                limpiarCadena($fila['precio'] ?? ''),
+                limpiarCadena(limpiarNumeroGasolina($fila['cantidad'] ?? '')),
+                limpiarCadena(limpiarNumeroGasolina($fila['precio'] ?? '')),
                 limpiarCadena($fila['unidad_venta'] ?? ''),
-                limpiarCadena($fila['total_venta'] ?? ''),
-                limpiarCadena($fila['kilometraje'] ?? ''),
+                limpiarCadena(limpiarNumeroGasolina($fila['total_venta'] ?? '')),
+                limpiarCadena(limpiarNumeroGasolina($fila['kilometraje'] ?? '')),
                 date('Y-m-d H:i:s'),
             ];
             $filasSql[] = "('" . implode("','", $valores) . "')";
