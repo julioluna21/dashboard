@@ -9,7 +9,7 @@ $Consulta  = new consultas();
 // Inserta $filas en gasolina_raw en lotes de $tamLote filas por sentencia, en vez de un
 // INSERT por fila -- con cargas de miles de filas, un insert a la vez es lo más lento
 // del proceso. Mismo patrón que insertarMovimientosPorLotes() en MovimiesntosContablesControlTem.php.
-function insertarGasolinaPorLotes($conexion, $filas, $tamLote = 500)
+function insertarGasolinaPorLotes($conexion, $filas, $desde, $hasta, $tamLote = 500)
 {
     $columnas = "cliente, proveedor, nro_identificacion, codigo_sap, no_venta, fecha,
         estacion, regional, id_eds, placa, conductor, combustible, cantidad, precio,
@@ -29,6 +29,14 @@ function insertarGasolinaPorLotes($conexion, $filas, $tamLote = 500)
             // estricto de MySQL -- se omite y se cuenta como error, en vez de dejar que
             // el INSERT completo del lote falle. Mismo criterio que insertarPeajesPorLotes().
             if ($fecha === '') {
+                $errores++;
+                continue;
+            }
+            // Una fila fuera del mes elegido nunca la borraría una recarga de ese mes
+            // (el DELETE solo cubre desde/hasta), así que se duplicaría en cada carga.
+            // Se compara solo la parte de fecha 'YYYY-MM-DD' que arma normalizarFechaGasolina().
+            $dia = substr($fecha, 0, 10);
+            if ($dia < $desde || $dia > $hasta) {
                 $errores++;
                 continue;
             }
@@ -56,19 +64,23 @@ function insertarGasolinaPorLotes($conexion, $filas, $tamLote = 500)
             $filasSql[] = "('" . implode("','", $valores) . "')";
         }
 
+        if (empty($filasSql)) {
+            continue;
+        }
+
         $sql = "INSERT INTO gasolina_raw ($columnas) VALUES " . implode(',', $filasSql);
 
         try {
             $resultado = mysqli_query($conexion, $sql);
             if ($resultado) {
-                $insertados += count($lote);
+                $insertados += count($filasSql);
             } else {
-                $errores += count($lote);
-                error_log("insertarGasolinaPorLotes: falló lote de " . count($lote) . " filas: " . mysqli_error($conexion));
+                $errores += count($filasSql);
+                error_log("insertarGasolinaPorLotes: falló lote de " . count($filasSql) . " filas: " . mysqli_error($conexion));
             }
         } catch (mysqli_sql_exception $e) {
-            $errores += count($lote);
-            error_log("insertarGasolinaPorLotes: excepción en lote de " . count($lote) . " filas: " . $e->getMessage());
+            $errores += count($filasSql);
+            error_log("insertarGasolinaPorLotes: excepción en lote de " . count($filasSql) . " filas: " . $e->getMessage());
         }
     }
 
@@ -141,7 +153,7 @@ switch ($_REQUEST['op'] ?? '') {
             $Consulta->borrarGasolinaRawPorRango($desde, $hasta);
         }
 
-        $resultado  = insertarGasolinaPorLotes($conexion, $registros);
+        $resultado  = insertarGasolinaPorLotes($conexion, $registros, $desde, $hasta);
         $insertados = $resultado['insertados'];
         $errores    = $resultado['errores'];
 
