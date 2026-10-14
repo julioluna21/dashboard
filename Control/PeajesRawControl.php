@@ -8,7 +8,7 @@ $Consulta  = new consultas();
 
 // Inserta $filas en peajes en lotes de $tamLote filas por sentencia, en vez de un
 // INSERT por fila. Mismo patrón que insertarGasolinaPorLotes() en GasolinaRawControl.php.
-function insertarPeajesPorLotes($conexion, $filas, $tamLote = 500)
+function insertarPeajesPorLotes($conexion, $filas, $desde, $hasta, $tamLote = 500)
 {
     $columnas = "fecha_recepcion, fecha_emision, tipo_transaccion, codigo_transaccion,
         placa, categoria, peaje, carril, sentido, valor_inicial, valor_cobrado,
@@ -36,6 +36,14 @@ function insertarPeajesPorLotes($conexion, $filas, $tamLote = 500)
                 $errores++;
                 continue;
             }
+            // Una fila fuera del mes elegido nunca la borraría una recarga de ese mes
+            // (el DELETE solo cubre desde/hasta), así que se duplicaría en cada carga.
+            // Se compara solo la parte de fecha 'YYYY-MM-DD' que arma normalizarFechaPeajes().
+            $dia = substr($fechaRecepcion, 0, 10);
+            if ($dia < $desde || $dia > $hasta) {
+                $errores++;
+                continue;
+            }
             $valores = [
                 limpiarCadena($fila['fecha_recepcion'] ?? ''),
                 limpiarCadena($fila['fecha_emision'] ?? ''),
@@ -56,19 +64,23 @@ function insertarPeajesPorLotes($conexion, $filas, $tamLote = 500)
             $filasSql[] = "('" . implode("','", $valores) . "')";
         }
 
+        if (empty($filasSql)) {
+            continue;
+        }
+
         $sql = "INSERT INTO peajes_raw ($columnas) VALUES " . implode(',', $filasSql);
 
         try {
             $resultado = mysqli_query($conexion, $sql);
             if ($resultado) {
-                $insertados += count($lote);
+                $insertados += count($filasSql);
             } else {
-                $errores += count($lote);
-                error_log("insertarPeajesPorLotes: falló lote de " . count($lote) . " filas: " . mysqli_error($conexion));
+                $errores += count($filasSql);
+                error_log("insertarPeajesPorLotes: falló lote de " . count($filasSql) . " filas: " . mysqli_error($conexion));
             }
         } catch (mysqli_sql_exception $e) {
-            $errores += count($lote);
-            error_log("insertarPeajesPorLotes: excepción en lote de " . count($lote) . " filas: " . $e->getMessage());
+            $errores += count($filasSql);
+            error_log("insertarPeajesPorLotes: excepción en lote de " . count($filasSql) . " filas: " . $e->getMessage());
         }
     }
 
@@ -137,7 +149,7 @@ switch ($_REQUEST['op'] ?? '') {
         $Consulta->borrarPeajesPorRango($desde, $hasta);
     }
 
-    $resultado  = insertarPeajesPorLotes($conexion, $registros);
+    $resultado  = insertarPeajesPorLotes($conexion, $registros, $desde, $hasta);
     $insertados = $resultado['insertados'];
     $errores    = $resultado['errores'];
 

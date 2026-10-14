@@ -91,7 +91,44 @@ function guardarCargaPeajes() {
   $('#btnGuardarPeajes').prop('disabled', true).text('Cargando...');
   $('#cargandoGuardarPeajes').show();
 
-  Rcorrerarchivo(function (filas) {
+  Rcorrerarchivo(function (filas, encabezado) {
+
+    // Todo se valida ANTES de enviar el primer lote: ese envío es el que borra el mes
+    // en el servidor, así que un archivo inválido no debe llegar a enviarse.
+    const problemas = validarEncabezadoPeajes(encabezado);
+
+    if (!problemas.length) {
+      const fueraDeMes = [];
+      let conFecha = 0;
+      filas.forEach(function (fila) {
+        // Las filas sin fecha son el pie de página del reporte ("TOTAL REGISTROS", etc.),
+        // que pasan el filtro de placa/código: no se rechazan, el servidor las omite.
+        if (fila.fecha_recepcion === '') return;
+        conFecha++;
+        if (!fila.fecha_recepcion.startsWith(mes + '-')) {
+          fueraDeMes.push(fila.fecha_recepcion + ' (placa ' + fila.placa + ')');
+        }
+      });
+
+      if (!conFecha) {
+        problemas.push('El archivo no tiene filas con fecha de recepción válida.');
+      }
+      if (fueraDeMes.length) {
+        problemas.push(fueraDeMes.length + ' fila(s) no son de ' + mes + ':');
+        problemas.push.apply(problemas, fueraDeMes.slice(0, 10));
+        if (fueraDeMes.length > 10) {
+          problemas.push('... y ' + (fueraDeMes.length - 10) + ' más.');
+        }
+      }
+    }
+
+    if (problemas.length) {
+      alert('No se cargó nada, el archivo tiene problemas:\n\n' + problemas.join('\n'));
+      $('#btnGuardarPeajes').prop('disabled', false).text('Guardar');
+      $('#cargandoGuardarPeajes').hide();
+      return;
+    }
+
     // Igual que en movimientos: se parte el arreglo ya procesado en lotes fijos
     // ANTES de mandarlo, para no superar el límite de tamaño de request del
     // servidor con archivos grandes, y para dar feedback de progreso real.
@@ -211,6 +248,28 @@ function listar(estado) {
     }).DataTable();
 }
 
+// Encabezado esperado del CSV de peajes, en el orden en que Rcorrerarchivo() lee las
+// columnas por posición. Si al archivo le falta una columna en medio, los datos se
+// corren en silencio (mismo problema que tuvo el CSV de agosto en gasolina).
+const ENCABEZADO_PEAJES = [
+  'fecha recepción', 'fecha emisión', 'tipo transacción', 'código transacción', 'placa',
+  'cat.', 'peaje', 'carril', 'sentido', 'valor inicial', 'valor cobrado', 'valor final',
+  'receptor facturación', 'cufe dian'
+];
+
+// Devuelve las columnas que no coinciden (arreglo vacío si el encabezado está bien).
+// Ignora mayúsculas, espacios sobrantes y el BOM. Las columnas extra al final se permiten.
+function validarEncabezadoPeajes(encabezado) {
+  const diferencias = [];
+  for (let i = 0; i < ENCABEZADO_PEAJES.length; i++) {
+    const recibido = String(encabezado[i] ?? '').replace('﻿', '').trim().toLowerCase();
+    if (recibido !== ENCABEZADO_PEAJES[i]) {
+      diferencias.push('Columna ' + (i + 1) + ': se esperaba "' + ENCABEZADO_PEAJES[i] + '" y llegó "' + recibido + '"');
+    }
+  }
+  return diferencias;
+}
+
 async function detectarEncoding(archivo) {
   const buffer = await archivo.slice(0, 4096).arrayBuffer();
   try {
@@ -246,6 +305,8 @@ async function Rcorrerarchivo(callback) {
 
       if (indiceEncabezado === -1) {
         alert('No se encontró el encabezado esperado ("FECHA RECEPCIÓN") en el archivo. Verifica el formato del CSV.');
+        $('#btnGuardarPeajes').prop('disabled', false).text('Guardar');
+        $('#cargandoGuardarPeajes').hide();
         return;
       }
 
@@ -278,7 +339,7 @@ async function Rcorrerarchivo(callback) {
       }
 
       if (typeof callback === "function") {
-        callback(obj);
+        callback(obj, datos[indiceEncabezado]);
       }
     },
     error: function (err) {
