@@ -94,7 +94,39 @@ function guardarCargaGasolina() {
   $('#btnGuardarGasolina').prop('disabled', true).text('Cargando...');
   $('#cargandoGuardarGasolina').show();
 
-  Rcorrerarchivo(function (filas) {
+  Rcorrerarchivo(function (filas, encabezado) {
+
+    // Todo se valida ANTES de enviar el primer lote: ese envío es el que borra el mes
+    // en el servidor, así que un archivo inválido no debe llegar a enviarse.
+    const problemas = validarEncabezadoGasolina(encabezado);
+
+    if (!problemas.length && !filas.length) {
+      problemas.push('El archivo no tiene filas de datos.');
+    }
+
+    if (!problemas.length) {
+      const fueraDeMes = [];
+      filas.forEach(function (fila, j) {
+        // fila.fecha ya viene normalizada como 'YYYY-MM-DD HH:MM...' (o '' si no se pudo leer).
+        if (!fila.fecha.startsWith(mes + '-')) {
+          fueraDeMes.push('Línea ' + (j + 2) + ': ' + (fila.fecha || 'fecha vacía o con formato no reconocido'));
+        }
+      });
+      if (fueraDeMes.length) {
+        problemas.push(fueraDeMes.length + ' fila(s) no son de ' + mes + ':');
+        problemas.push.apply(problemas, fueraDeMes.slice(0, 10));
+        if (fueraDeMes.length > 10) {
+          problemas.push('... y ' + (fueraDeMes.length - 10) + ' más.');
+        }
+      }
+    }
+
+    if (problemas.length) {
+      alert('No se cargó nada, el archivo tiene problemas:\n\n' + problemas.join('\n'));
+      $('#btnGuardarGasolina').prop('disabled', false).text('Guardar');
+      $('#cargandoGuardarGasolina').hide();
+      return;
+    }
     // Igual que en peajes: se parte el arreglo ya procesado en lotes fijos
     // ANTES de mandarlo, para no superar el límite de tamaño de request del
     // servidor con archivos grandes, y para dar feedback de progreso real.
@@ -236,6 +268,30 @@ function listar(estado)
    
 }
 
+// Encabezado esperado del CSV, en el orden en que Rcorrerarchivo() lee las columnas
+// por posición. Si al archivo le falta una columna en medio, los datos se corren en
+// silencio (pasó con el CSV de agosto, que venía sin "Unidad de Venta").
+const ENCABEZADO_GASOLINA = [
+  'cliente', 'proveedor', 'nro.identificación', 'código sap', 'no. venta', 'fecha',
+  'estación', 'regional', 'id eds', 'placa', 'conductor', 'combustible', 'cantidad',
+  'precio', 'unidad de venta', 'total venta', 'kilometraje'
+];
+
+// Devuelve las columnas que no coinciden (arreglo vacío si el encabezado está bien).
+// Ignora mayúsculas, espacios sobrantes y el BOM que Excel pone al inicio del archivo.
+// Las columnas extra al final se permiten: algunos exports traen columnas vacías de más.
+function validarEncabezadoGasolina(encabezado) {
+  const diferencias = [];
+  for (let i = 0; i < ENCABEZADO_GASOLINA.length; i++) {
+    const recibido = String(encabezado[i] ?? '').replace('\uFEFF', '').trim().toLowerCase();
+    if (recibido !== ENCABEZADO_GASOLINA[i]) {
+      diferencias.push('Columna ' + (i + 1) + ': se esperaba "' + ENCABEZADO_GASOLINA[i] + '" y llegó "' + recibido + '"');
+    }
+  }
+  return diferencias;
+}
+
+
 function Rcorrerarchivo(callback) {
   if (!input) return;
   var archivo = input.files && input.files[0];
@@ -300,7 +356,7 @@ function Rcorrerarchivo(callback) {
  
       // Ejecutar callback con los datos procesados
       if (typeof callback === "function") {
-        callback(obj);
+        callback(obj, datos[0] || []);
       }
     },
     error: function (err) {
