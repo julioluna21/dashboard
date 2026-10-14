@@ -808,22 +808,26 @@ public function detallecontrato($id)
             // Borra los registros ya cargados de peajes en un rango de fechas (formato 'YYYY-MM-DD'),
             // para poder recargar el mes sin duplicar registros. Mismo patrón que
             // borrarMovimientosPorRango() para movimientos_contables.
+            // Límite superior exclusivo (< día siguiente) porque `fecha` es DATETIME: con
+            // BETWEEN, 'hasta' se toma como 00:00:00 y el último día del mes no se borraba.
             public function borrarPeajesPorRango($fechaDesde, $fechaHasta)
             {
                 $fechaDesde = limpiarCadena($fechaDesde);
                 $fechaHasta = limpiarCadena($fechaHasta);
-                $sql = "DELETE FROM peajes_raw WHERE fecha_recepcion BETWEEN '$fechaDesde' AND '$fechaHasta'";
+                $sql = "DELETE FROM peajes_raw WHERE fecha_recepcion >= '$fechaDesde' AND fecha_recepcion < DATE_ADD('$fechaHasta', INTERVAL 1 DAY)";
                 return ejecutarConsulta($sql);
             }
 
             // Borra los registros ya cargados de gasolina en un rango de fechas (formato 'YYYY-MM-DD'),
             // para poder recargar el mes sin duplicar registros. Mismo patrón que
             // borrarPeajesPorRango() / borrarMovimientosPorRango().
+            // Límite superior exclusivo (< día siguiente) porque `fecha` es DATETIME: con
+            // BETWEEN, 'hasta' se toma como 00:00:00 y el último día del mes no se borraba.
             public function borrarGasolinaRawPorRango($fechaDesde, $fechaHasta)
             {
                 $fechaDesde = limpiarCadena($fechaDesde);
                 $fechaHasta = limpiarCadena($fechaHasta);
-                $sql = "DELETE FROM gasolina_raw WHERE fecha BETWEEN '$fechaDesde' AND '$fechaHasta'";
+                $sql = "DELETE FROM gasolina_raw WHERE fecha >= '$fechaDesde' AND fecha < DATE_ADD('$fechaHasta', INTERVAL 1 DAY)";
                 return ejecutarConsulta($sql);
             }
 }
